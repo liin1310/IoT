@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+
+# Node.js (Frontend & Backend)
+**/node_modules/
