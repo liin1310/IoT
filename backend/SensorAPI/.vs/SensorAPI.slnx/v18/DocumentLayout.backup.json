@@ -1,0 +1,232 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "D:\\project2025.1\\IoT\\backend\\SensorAPI\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\project2025.1\\IoT\\backend\\SensorAPI\\SensorAPI\\Program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:SensorAPI\\Program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\project2025.1\\IoT\\backend\\WebApplication1\\WebApplication1\\Controllers\\SensorDataController.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\project2025.1\\IoT\\backend\\WebApplication1\\WebApplication1\\Migrations\\20251229192834_UseDateTimeOffset.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\project2025.1\\IoT\\backend\\WebApplication1\\WebApplication1\\Models\\SensorData.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\project2025.1\\IoT\\backend\\WebApplication1\\WebApplication1\\Program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\project2025.1\\IoT\\backend\\WebApplication1\\WebApplication1\\Properties\\launchSettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\project2025.1\\IoT\\backend\\WebApplication1\\WebApplication1\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\project2025.1\\IoT\\backend\\WebApplication1\\WebApplication1\\Migrations\\20251229180914_InitialCreate.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\project2025.1\\IoT\\backend\\WebApplication1\\WebApplication1\\Models\\AppDbContext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\project2025.1\\IoT\\backend\\WebApplication1\\WebApplication1\\Models\\Device.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\project2025.1\\IoT\\backend\\WebApplication1\\WebApplication1\\Models\\User.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\project2025.1\\IoT\\backend\\SensorAPI\\SensorAPI\\Dockerfile||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:SensorAPI\\Dockerfile||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\project2025.1\\IoT\\backend\\SensorAPI\\SensorAPI\\Models\\AppDbContext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:SensorAPI\\Models\\AppDbContext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\project2025.1\\IoT\\backend\\SensorAPI\\SensorAPI\\SensorAPI.http||{5703B403-55E7-4C63-8C88-A8F52C7A45C5}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:SensorAPI\\SensorAPI.http||{5703B403-55E7-4C63-8C88-A8F52C7A45C5}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Program.cs",
+              "DocumentMoniker": "D:\\project2025.1\\IoT\\backend\\SensorAPI\\SensorAPI\\Program.cs",
+              "RelativeDocumentMoniker": "SensorAPI\\Program.cs",
+              "ToolTip": "D:\\project2025.1\\IoT\\backend\\SensorAPI\\SensorAPI\\Program.cs",
+              "RelativeToolTip": "SensorAPI\\Program.cs",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-30T09:53:53.954Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "Dockerfile",
+              "DocumentMoniker": "D:\\project2025.1\\IoT\\backend\\SensorAPI\\SensorAPI\\Dockerfile",
+              "RelativeDocumentMoniker": "SensorAPI\\Dockerfile",
+              "ToolTip": "D:\\project2025.1\\IoT\\backend\\SensorAPI\\SensorAPI\\Dockerfile",
+              "RelativeToolTip": "SensorAPI\\Dockerfile",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABUAAAAmAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-12-30T09:33:18.634Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "AppDbContext.cs",
+              "DocumentMoniker": "D:\\project2025.1\\IoT\\backend\\SensorAPI\\SensorAPI\\Models\\AppDbContext.cs",
+              "RelativeDocumentMoniker": "SensorAPI\\Models\\AppDbContext.cs",
+              "ToolTip": "D:\\project2025.1\\IoT\\backend\\SensorAPI\\SensorAPI\\Models\\AppDbContext.cs",
+              "RelativeToolTip": "SensorAPI\\Models\\AppDbContext.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABUAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-30T16:03:25.145Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "SensorAPI.http",
+              "DocumentMoniker": "D:\\project2025.1\\IoT\\backend\\SensorAPI\\SensorAPI\\SensorAPI.http",
+              "RelativeDocumentMoniker": "SensorAPI\\SensorAPI.http",
+              "ToolTip": "D:\\project2025.1\\IoT\\backend\\SensorAPI\\SensorAPI\\SensorAPI.http",
+              "RelativeToolTip": "SensorAPI\\SensorAPI.http",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003502|",
+              "WhenOpened": "2025-12-30T16:00:28.791Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "SensorDataController.cs",
+              "DocumentMoniker": "D:\\project2025.1\\IoT\\backend\\WebApplication1\\WebApplication1\\Controllers\\SensorDataController.cs",
+              "RelativeDocumentMoniker": "..\\WebApplication1\\WebApplication1\\Controllers\\SensorDataController.cs",
+              "ToolTip": "D:\\project2025.1\\IoT\\backend\\WebApplication1\\WebApplication1\\Controllers\\SensorDataController.cs",
+              "RelativeToolTip": "..\\WebApplication1\\WebApplication1\\Controllers\\SensorDataController.cs",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-29T17:50:20.009Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "20251229192834_UseDateTimeOffset.cs",
+              "DocumentMoniker": "D:\\project2025.1\\IoT\\backend\\WebApplication1\\WebApplication1\\Migrations\\20251229192834_UseDateTimeOffset.cs",
+              "RelativeDocumentMoniker": "..\\WebApplication1\\WebApplication1\\Migrations\\20251229192834_UseDateTimeOffset.cs",
+              "ToolTip": "D:\\project2025.1\\IoT\\backend\\WebApplication1\\WebApplication1\\Migrations\\20251229192834_UseDateTimeOffset.cs",
+              "RelativeToolTip": "..\\WebApplication1\\WebApplication1\\Migrations\\20251229192834_UseDateTimeOffset.cs",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAuwBYAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-29T19:28:34.497Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "SensorData.cs",
+              "DocumentMoniker": "D:\\project2025.1\\IoT\\backend\\WebApplication1\\WebApplication1\\Models\\SensorData.cs",
+              "RelativeDocumentMoniker": "..\\WebApplication1\\WebApplication1\\Models\\SensorData.cs",
+              "ToolTip": "D:\\project2025.1\\IoT\\backend\\WebApplication1\\WebApplication1\\Models\\SensorData.cs",
+              "RelativeToolTip": "..\\WebApplication1\\WebApplication1\\Models\\SensorData.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAA4AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-29T17:07:15.67Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "Program.cs",
+              "DocumentMoniker": "D:\\project2025.1\\IoT\\backend\\WebApplication1\\WebApplication1\\Program.cs",
+              "RelativeDocumentMoniker": "..\\WebApplication1\\WebApplication1\\Program.cs",
+              "ToolTip": "D:\\project2025.1\\IoT\\backend\\WebApplication1\\WebApplication1\\Program.cs",
+              "RelativeToolTip": "..\\WebApplication1\\WebApplication1\\Program.cs",
+              "ViewState": "AgIAABwAAAAAAAAAAAAAABwAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-29T17:14:39.718Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "launchSettings.json",
+              "DocumentMoniker": "D:\\project2025.1\\IoT\\backend\\WebApplication1\\WebApplication1\\Properties\\launchSettings.json",
+              "RelativeDocumentMoniker": "..\\WebApplication1\\WebApplication1\\Properties\\launchSettings.json",
+              "ToolTip": "D:\\project2025.1\\IoT\\backend\\WebApplication1\\WebApplication1\\Properties\\launchSettings.json",
+              "RelativeToolTip": "..\\WebApplication1\\WebApplication1\\Properties\\launchSettings.json",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAABYAAAADAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-12-29T19:11:04.376Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "D:\\project2025.1\\IoT\\backend\\WebApplication1\\WebApplication1\\appsettings.json",
+              "RelativeDocumentMoniker": "..\\WebApplication1\\WebApplication1\\appsettings.json",
+              "ToolTip": "D:\\project2025.1\\IoT\\backend\\WebApplication1\\WebApplication1\\appsettings.json",
+              "RelativeToolTip": "..\\WebApplication1\\WebApplication1\\appsettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAABbAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-12-29T17:59:09.563Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "20251229180914_InitialCreate.cs",
+              "DocumentMoniker": "D:\\project2025.1\\IoT\\backend\\WebApplication1\\WebApplication1\\Migrations\\20251229180914_InitialCreate.cs",
+              "RelativeDocumentMoniker": "..\\WebApplication1\\WebApplication1\\Migrations\\20251229180914_InitialCreate.cs",
+              "ToolTip": "D:\\project2025.1\\IoT\\backend\\WebApplication1\\WebApplication1\\Migrations\\20251229180914_InitialCreate.cs",
+              "RelativeToolTip": "..\\WebApplication1\\WebApplication1\\Migrations\\20251229180914_InitialCreate.cs",
+              "ViewState": "AgIAAAkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-29T18:09:14.8Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "AppDbContext.cs",
+              "DocumentMoniker": "D:\\project2025.1\\IoT\\backend\\WebApplication1\\WebApplication1\\Models\\AppDbContext.cs",
+              "RelativeDocumentMoniker": "..\\WebApplication1\\WebApplication1\\Models\\AppDbContext.cs",
+              "ToolTip": "D:\\project2025.1\\IoT\\backend\\WebApplication1\\WebApplication1\\Models\\AppDbContext.cs",
+              "RelativeToolTip": "..\\WebApplication1\\WebApplication1\\Models\\AppDbContext.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-29T17:14:26.587Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "Device.cs",
+              "DocumentMoniker": "D:\\project2025.1\\IoT\\backend\\WebApplication1\\WebApplication1\\Models\\Device.cs",
+              "RelativeDocumentMoniker": "..\\WebApplication1\\WebApplication1\\Models\\Device.cs",
+              "ToolTip": "D:\\project2025.1\\IoT\\backend\\WebApplication1\\WebApplication1\\Models\\Device.cs",
+              "RelativeToolTip": "..\\WebApplication1\\WebApplication1\\Models\\Device.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-29T17:13:40.19Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "User.cs",
+              "DocumentMoniker": "D:\\project2025.1\\IoT\\backend\\WebApplication1\\WebApplication1\\Models\\User.cs",
+              "RelativeDocumentMoniker": "..\\WebApplication1\\WebApplication1\\Models\\User.cs",
+              "ToolTip": "D:\\project2025.1\\IoT\\backend\\WebApplication1\\WebApplication1\\Models\\User.cs",
+              "RelativeToolTip": "..\\WebApplication1\\WebApplication1\\Models\\User.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-29T17:12:01.659Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
