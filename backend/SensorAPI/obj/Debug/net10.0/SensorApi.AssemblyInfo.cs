@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SensorApi")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4f44e144084e1625b2da2516c2c2bf4e178c376c")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+41a9afa7beeebff235edbae60e0039c80ee6e0b1")]
 [assembly: System.Reflection.AssemblyProductAttribute("SensorApi")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SensorApi")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
