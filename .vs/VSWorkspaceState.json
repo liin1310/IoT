@@ -2,8 +2,8 @@
   "ExpandedNodes": [
     "",
     "\\backend",
-    "\\backend\\SensorAPI",
-    "\\frontend"
+    "\\backend\\SensorAPI"
   ],
+  "SelectedNode": "\\backend\\.gitignore",
   "PreviewInSolutionExplorer": false
 }
