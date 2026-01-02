@@ -14,8 +14,19 @@ namespace SensorApi.Models
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<SensorData>()
-                        .ToTable("sensor_data_table");
+            modelBuilder.Entity<SensorData>(entity =>
+            {
+                entity.ToTable("sensor_data_table");
+
+                entity.Property(e => e.DeviceId)
+                      .HasColumnName("device_id");
+
+                entity.HasOne(e => e.Device)
+                      .WithMany()
+                      .HasForeignKey(e => e.DeviceId)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
         }
+
     }
 }

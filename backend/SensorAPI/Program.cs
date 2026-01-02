@@ -3,7 +3,7 @@ using SensorApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Cấu hình CORS để Frontend truy cập được
+// ===================== CORS =====================
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
@@ -14,28 +14,25 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Add services
+// ===================== Services =====================
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Kết nối PostgreSQL
+// PostgreSQL
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
 
 var app = builder.Build();
 
-// ==========================================================
-// 2. ĐOẠN CODE TỰ ĐỘNG UPDATE DATABASE NẰM Ở ĐÂY
-// ==========================================================
+// ===================== AUTO MIGRATION =====================
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     try
     {
         var context = services.GetRequiredService<AppDbContext>();
-        // Lệnh này tương đương "Update-Database" trên máy local
         context.Database.Migrate();
         Console.WriteLine(">>> Database đã được cập nhật tự động thành công!");
     }
@@ -44,18 +41,20 @@ using (var scope = app.Services.CreateScope())
         Console.WriteLine($">>> Lỗi cập nhật Database: {ex.Message}");
     }
 }
-// ==========================================================
 
+// ===================== MIDDLEWARE =====================
 app.UseCors("AllowAll");
 
-// Middleware
-if (app.Environment.IsDevelopment())
+//Bật Swagger cho cả Production
+app.UseSwagger();
+app.UseSwaggerUI();
+
+//KHÔNG dùng HTTPS Redirection trên Render
+if (!app.Environment.IsProduction())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseHttpsRedirection();
 }
 
-app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
 app.Run();
