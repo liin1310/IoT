@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.OpenApi;
+using Microsoft.EntityFrameworkCore;
+using Scalar.AspNetCore;
 using SensorApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,12 +19,14 @@ builder.Services.AddCors(options =>
 // ===================== Services =====================
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 
-// Đăng ký Background Service nhận dữ liệu MQTT của Thu
+// Cấu hình OpenAPI (thay thế SwaggerGen)
+builder.Services.AddOpenApi();
+
+// Đăng ký Background Service MQTT của Thu
 builder.Services.AddHostedService<SensorApi.Services.MqttWorker>();
 
-// Cấu hình kết nối PostgreSQL (smarthome-db)
+// Cấu hình kết nối PostgreSQL
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
@@ -36,37 +40,31 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var context = services.GetRequiredService<AppDbContext>();
-
         context.Database.Migrate();
-        Console.WriteLine(">>> Database smarthome-db đã sẵn sàng!");
 
-        // 2. Tự động tạo thiết bị mặc định nếu chưa có (Để lấy ID tự tăng)
         if (!context.Devices.Any())
         {
-            context.Devices.Add(new Device
-            {
-                name = "ESP32 Trung Tâm",
-                type = "ESP32-S3",
-                is_online = true
-            });
+            context.Devices.Add(new Device { name = "ESP32 Lab", type = "ESP32", is_online = true });
             context.SaveChanges();
-            Console.WriteLine(">>> Đã khởi tạo thiết bị mặc định thành công!");
         }
+        Console.WriteLine(">>> smarthome-db và Seed Data đã sẵn sàng!");
     }
     catch (Exception ex)
     {
-        Console.WriteLine($">>> Lỗi cập nhật Database: {ex.Message}");
+        Console.WriteLine($">>> Lỗi Database: {ex.Message}");
     }
 }
 
 // ===================== MIDDLEWARE =====================
 app.UseCors("AllowAll");
 
-// Bật Swagger cho cả Production để nhóm dễ test
-app.UseSwagger();
-app.UseSwaggerUI();
+// Bật giao diện Scalar thay cho Swagger (Truy cập qua /scalar/v1)
+if (app.Environment.IsDevelopment() || true) // Bật luôn trên Render để nhóm test
+{
+    app.MapOpenApi(); // Tạo file spec /openapi/v1.json
+    app.MapScalarApiReference(); // Tạo giao diện tại /scalar/v1
+}
 
-// KHÔNG dùng HTTPS Redirection trên Render để tránh lỗi vòng lặp
 if (!app.Environment.IsProduction())
 {
     app.UseHttpsRedirection();
