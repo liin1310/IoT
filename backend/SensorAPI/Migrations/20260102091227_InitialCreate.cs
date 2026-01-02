@@ -36,23 +36,23 @@ namespace SensorApi.Migrations
                     device_id = table.Column<int>(type: "integer", nullable: false),
                     type = table.Column<string>(type: "text", nullable: false),
                     value = table.Column<double>(type: "double precision", nullable: false),
-                    received_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    Deviceid = table.Column<int>(type: "integer", nullable: true)
+                    received_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_sensor_data_table", x => x.id);
                     table.ForeignKey(
-                        name: "FK_sensor_data_table_Devices_Deviceid",
-                        column: x => x.Deviceid,
+                        name: "FK_sensor_data_table_Devices_device_id",
+                        column: x => x.device_id,
                         principalTable: "Devices",
-                        principalColumn: "id");
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_sensor_data_table_Deviceid",
+                name: "IX_sensor_data_table_device_id",
                 table: "sensor_data_table",
-                column: "Deviceid");
+                column: "device_id");
         }
 
         /// <inheritdoc />

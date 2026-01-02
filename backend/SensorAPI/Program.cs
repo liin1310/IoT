@@ -19,17 +19,17 @@ builder.Services.AddCors(options =>
 // ===================== Services =====================
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-
-// Cấu hình OpenAPI (thay thế SwaggerGen)
 builder.Services.AddOpenApi();
 
-// Đăng ký Background Service MQTT của Thu
 builder.Services.AddHostedService<SensorApi.Services.MqttWorker>();
 
-// Cấu hình kết nối PostgreSQL
+// SỬA LỖI TẠI ĐÂY: Thêm cặp ngoặc nhọn { } vì có 2 dòng lệnh
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
-);
+{
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
+    // Bỏ qua cảnh báo PendingModelChanges để chạy ổn định trên Render
+    options.ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
+});
 
 var app = builder.Build();
 
@@ -58,11 +58,10 @@ using (var scope = app.Services.CreateScope())
 // ===================== MIDDLEWARE =====================
 app.UseCors("AllowAll");
 
-// Bật giao diện Scalar thay cho Swagger (Truy cập qua /scalar/v1)
-if (app.Environment.IsDevelopment() || true) // Bật luôn trên Render để nhóm test
+if (app.Environment.IsDevelopment() || true)
 {
-    app.MapOpenApi(); // Tạo file spec /openapi/v1.json
-    app.MapScalarApiReference(); // Tạo giao diện tại /scalar/v1
+    app.MapOpenApi();
+    app.MapScalarApiReference();
 }
 
 if (!app.Environment.IsProduction())

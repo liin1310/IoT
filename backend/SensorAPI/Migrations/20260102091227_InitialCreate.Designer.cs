@@ -12,8 +12,8 @@ using SensorApi.Models;
 namespace SensorApi.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251229192834_UseDateTimeOffset")]
-    partial class UseDateTimeOffset
+    [Migration("20260102091227_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -57,11 +57,9 @@ namespace SensorApi.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("id"));
 
-                    b.Property<int?>("Deviceid")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("device_id")
-                        .HasColumnType("integer");
+                    b.Property<int>("DeviceId")
+                        .HasColumnType("integer")
+                        .HasColumnName("device_id");
 
                     b.Property<DateTimeOffset>("received_at")
                         .HasColumnType("timestamp with time zone");
@@ -75,7 +73,7 @@ namespace SensorApi.Migrations
 
                     b.HasKey("id");
 
-                    b.HasIndex("Deviceid");
+                    b.HasIndex("DeviceId");
 
                     b.ToTable("sensor_data_table", (string)null);
                 });
@@ -84,7 +82,9 @@ namespace SensorApi.Migrations
                 {
                     b.HasOne("SensorApi.Models.Device", "Device")
                         .WithMany()
-                        .HasForeignKey("Deviceid");
+                        .HasForeignKey("DeviceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.Navigation("Device");
                 });
