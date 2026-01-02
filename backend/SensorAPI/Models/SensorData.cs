@@ -12,6 +12,6 @@
         public DateTimeOffset received_at { get; set; }
 
         // Navigation
-        public Device Device { get; set; } = null!;
+        public Device? Device { get; set; } = null!;
     }
 }
