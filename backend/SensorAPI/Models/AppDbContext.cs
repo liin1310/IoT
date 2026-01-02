@@ -14,6 +14,10 @@ namespace SensorApi.Models
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<Device>(entity =>
+            {
+                entity.ToTable("devices_table"); 
+            });
             modelBuilder.Entity<SensorData>(entity =>
             {
                 entity.ToTable("sensor_data_table");
