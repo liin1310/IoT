@@ -11,7 +11,7 @@ namespace SensorApi.Controllers
         private readonly AppDbContext _context;
         public SensorDataController(AppDbContext context) { _context = context; }
 
-        // 1. API lấy lịch sử dữ liệu (N.Linh dùng vẽ biểu đồ)
+        //API lấy lịch sử dữ liệu 
         [HttpGet("history/{type}")]
         public async Task<IActionResult> GetHistory(string type)
         {
@@ -23,22 +23,24 @@ namespace SensorApi.Controllers
             return Ok(data);
         }
 
-        // 2. Kiểm tra cháy dựa trên logic WARNING (1.0) của P.Linh
+        //Kiểm tra cháy dựa trên logic WARNING (1.0) của P.Linh
         [HttpGet("check-fire")]
         public async Task<IActionResult> CheckFire()
         {
             var last60Seconds = DateTimeOffset.UtcNow.AddSeconds(-60);
 
-            // Tìm xem có bất kỳ WARNING (1.0) nào trong 60 giây qua không
             var isFire = await _context.SensorDataEntries
                 .AnyAsync(s => s.received_at >= last60Seconds
-                            && s.type == "FireStatus"
-                            && s.value == 1.0);
+                            && (
+                                (s.type == "FireStatus" && s.value == 1.0) ||
+                                (s.type == "Gas" && s.value >= 2000.0) // Thêm điều kiện này
+                               )
+                );
 
             return Ok(new { isFire = isFire });
         }
 
-        // 3. API nhận dữ liệu (Dùng để test thủ công qua Postman)
+        // API nhận dữ liệu
         [HttpPost]
         public async Task<IActionResult> ReceiveData(SensorData data)
         {
