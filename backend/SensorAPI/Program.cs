@@ -101,7 +101,7 @@ using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Database - Tự động nhận DATABASE_URL trên Render hoặc dùng local
+// ===================== 1. CẤU HÌNH DATABASE (Bản Fix lỗi Port và Bỏ qua cảnh báo) =====================
 var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
 string connString;
 
@@ -115,10 +115,7 @@ else
     {
         var databaseUri = new Uri(databaseUrl);
         var userInfo = databaseUri.UserInfo.Split(':');
-        
-        // --- SỬA LỖI TẠI ĐÂY: Nếu không thấy cổng (-1) thì mặc định là 5432 ---
         int port = databaseUri.Port == -1 ? 5432 : databaseUri.Port;
-        
         connString = $"Host={databaseUri.Host};Port={port};Database={databaseUri.AbsolutePath.Trim('/')};Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Require;Trust Server Certificate=true";
         Console.WriteLine($">>> Đã nhận cấu hình từ Render (Port: {port})");
     }
@@ -130,59 +127,66 @@ else
 }
 
 builder.Services.AddDbContext<AppDbContext>(opt => 
-    opt.UseNpgsql(connString, o => o.EnableRetryOnFailure()));
+{
+    opt.UseNpgsql(connString, o => o.EnableRetryOnFailure());
+    // --- QUAN TRỌNG: Dòng này giúp bỏ qua lỗi PendingModelChangesWarning ---
+    opt.ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
+});
 
-// 2. Services
+// ===================== 2. ĐĂNG KÝ CÁC DỊCH VỤ =====================
 builder.Services.AddControllers();
 builder.Services.AddSignalR();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
 
-// MQTT & Worker
 builder.Services.AddSingleton<IMqttClient>(sp => new MqttFactory().CreateMqttClient());
 builder.Services.AddSingleton<MqttPublisher>();
 builder.Services.AddHostedService<MqttWorker>();
 
-// 3. CORS
-builder.Services.AddCors(opt => opt.AddPolicy("AllowAll", p => p.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()));
+builder.Services.AddCors(opt => opt.AddPolicy("AllowAll", p => 
+    p.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()));
 
 var app = builder.Build();
 
-// 4. Migrate Database tự động & SEED DATA
+// ===================== 3. TỰ ĐỘNG MIGRATE & SEED DATA =====================
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    try {
+    try 
+    {
+        Console.WriteLine(">>> Đang khởi tạo Database...");
+        // Ép buộc chạy Migration
         db.Database.Migrate();
 
-        // Tạo thiết bị mẫu nếu chưa có
         if (!db.Devices.Any()) {
             db.Devices.Add(new Device { name = "ESP32 Lab", type = "ESP32", is_online = true });
         }
 
-        // --- QUAN TRỌNG: Tạo tài khoản mẫu để test Login ---
         if (!db.Users.Any()) {
             db.Users.Add(new User { 
                 Username = "admin", 
-                PasswordHash = "123456", // Password để test
+                PasswordHash = "123456", 
                 email = "admin@example.com",
                 created_at = DateTime.UtcNow
             });
-            Console.WriteLine(">>> Đã tạo tài khoản admin mặc định (Pass: 123456)");
+            Console.WriteLine(">>> Đã tạo tài khoản admin/123456");
         }
 
         db.SaveChanges();
-        Console.WriteLine(">>> Database và Seed Data đã sẵn sàng!");
-    } catch (Exception ex) {
-        Console.WriteLine($">>> Lỗi Database: {ex.Message}");
+        Console.WriteLine(">>> DATABASE VÀ SEED DATA ĐÃ SẴN SÀNG!");
+    } 
+    catch (Exception ex) 
+    {
+        Console.WriteLine($">>> LỖI DATABASE: {ex.Message}");
     }
 }
 
-// 5. Middleware
+// ===================== 4. MIDDLEWARE =====================
 app.UseCors("AllowAll");
 app.MapOpenApi();
 app.MapScalarApiReference();
+app.UseAuthorization();
 app.MapControllers();
-app.MapHub<SensorHub>("/sensorhub"); // Endpoint cho Realtime
+app.MapHub<SensorHub>("/sensorhub"); 
 
 app.Run();
