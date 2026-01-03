@@ -101,7 +101,7 @@ using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Database - Tự động nhận DATABASE_URL trên Render
+// 1. Database - Tự động nhận DATABASE_URL trên Render hoặc dùng local
 var connString = Environment.GetEnvironmentVariable("DATABASE_URL") 
                  ?? builder.Configuration.GetConnectionString("DefaultConnection");
 
@@ -123,14 +123,33 @@ builder.Services.AddCors(opt => opt.AddPolicy("AllowAll", p => p.AllowAnyOrigin(
 
 var app = builder.Build();
 
-// 4. Migrate Database tự động khi deploy
+// 4. Migrate Database tự động & SEED DATA
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.Migrate();
-    if (!db.Devices.Any()) {
-        db.Devices.Add(new Device { name = "ESP32 Lab", type = "ESP32", is_online = true });
+    try {
+        db.Database.Migrate();
+
+        // Tạo thiết bị mẫu nếu chưa có
+        if (!db.Devices.Any()) {
+            db.Devices.Add(new Device { name = "ESP32 Lab", type = "ESP32", is_online = true });
+        }
+
+        // --- QUAN TRỌNG: Tạo tài khoản mẫu để test Login ---
+        if (!db.Users.Any()) {
+            db.Users.Add(new User { 
+                Username = "admin", 
+                PasswordHash = "123456", // Password để bạn test
+                email = "admin@example.com",
+                created_at = DateTime.UtcNow
+            });
+            Console.WriteLine(">>> Đã tạo tài khoản admin mặc định (Pass: 123456)");
+        }
+
         db.SaveChanges();
+        Console.WriteLine(">>> Database và Seed Data đã sẵn sàng!");
+    } catch (Exception ex) {
+        Console.WriteLine($">>> Lỗi Database: {ex.Message}");
     }
 }
 

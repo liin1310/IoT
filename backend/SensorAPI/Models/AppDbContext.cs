@@ -9,15 +9,26 @@ namespace SensorApi.Models
         {
         }
 
+        // --- DÒNG QUAN TRỌNG ĐỂ FIX LỖI AUTH ---
+        public DbSet<User> Users { get; set; } 
+        // ---------------------------------------
+
         public DbSet<Device> Devices { get; set; }
         public DbSet<SensorData> SensorDataEntries { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            // Cấu hình bảng User
+            modelBuilder.Entity<User>(entity =>
+            {
+                entity.ToTable("users_table"); // Đặt tên bảng là users_table
+            });
+
             modelBuilder.Entity<Device>(entity =>
             {
                 entity.ToTable("devices_table"); 
             });
+
             modelBuilder.Entity<SensorData>(entity =>
             {
                 entity.ToTable("sensor_data_table");
@@ -31,6 +42,5 @@ namespace SensorApi.Models
                       .OnDelete(DeleteBehavior.Restrict);
             });
         }
-
     }
 }
