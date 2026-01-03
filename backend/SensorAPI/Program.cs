@@ -102,10 +102,25 @@ using Scalar.AspNetCore;
 var builder = WebApplication.CreateBuilder(args);
 
 // 1. Database - Tự động nhận DATABASE_URL trên Render hoặc dùng local
-var connString = Environment.GetEnvironmentVariable("DATABASE_URL") 
-                 ?? builder.Configuration.GetConnectionString("DefaultConnection");
+var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+string connString;
 
-builder.Services.AddDbContext<AppDbContext>(opt => opt.UseNpgsql(connString));
+if (string.IsNullOrEmpty(databaseUrl))
+{
+    // Chạy ở máy cá nhân (Local)
+    connString = builder.Configuration.GetConnectionString("DefaultConnection") ?? "";
+}
+else
+{
+    // Chuyển đổi postgres:// thành định dạng Npgsql (Dành cho Render)
+    var databaseUri = new Uri(databaseUrl);
+    var userInfo = databaseUri.UserInfo.Split(':');
+
+    connString = $"Host={databaseUri.Host};Port={databaseUri.Port};Database={databaseUri.AbsolutePath.Trim('/')};Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Require;Trust Server Certificate=true";
+}
+
+builder.Services.AddDbContext<AppDbContext>(opt => 
+    opt.UseNpgsql(connString, o => o.EnableRetryOnFailure()));
 
 // 2. Services
 builder.Services.AddControllers();
@@ -139,7 +154,7 @@ using (var scope = app.Services.CreateScope())
         if (!db.Users.Any()) {
             db.Users.Add(new User { 
                 Username = "admin", 
-                PasswordHash = "123456", // Password để bạn test
+                PasswordHash = "123456", // Password để test
                 email = "admin@example.com",
                 created_at = DateTime.UtcNow
             });
