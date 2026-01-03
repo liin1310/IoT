@@ -101,7 +101,7 @@ using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ===================== 1. CẤU HÌNH DATABASE (Bản Fix lỗi Port và Bỏ qua cảnh báo) =====================
+// ===================== 1. CẤU HÌNH DATABASE (Fix Port -1 & SSL) =====================
 var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
 string connString;
 
@@ -115,9 +115,11 @@ else
     {
         var databaseUri = new Uri(databaseUrl);
         var userInfo = databaseUri.UserInfo.Split(':');
+        // Fix lỗi Port -1: Nếu Render không cung cấp port, mặc định dùng 5432
         int port = databaseUri.Port == -1 ? 5432 : databaseUri.Port;
+        
         connString = $"Host={databaseUri.Host};Port={port};Database={databaseUri.AbsolutePath.Trim('/')};Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Require;Trust Server Certificate=true";
-        Console.WriteLine($">>> Đã nhận cấu hình từ Render (Port: {port})");
+        Console.WriteLine($">>> Đã nhận cấu hình từ Render (Host: {databaseUri.Host}, Port: {port})");
     }
     catch (Exception ex)
     {
@@ -129,7 +131,7 @@ else
 builder.Services.AddDbContext<AppDbContext>(opt => 
 {
     opt.UseNpgsql(connString, o => o.EnableRetryOnFailure());
-    // --- QUAN TRỌNG: Dòng này giúp bỏ qua lỗi PendingModelChangesWarning ---
+    // Bỏ qua cảnh báo thay đổi Model để tránh lỗi crash khi deploy
     opt.ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
 });
 
@@ -139,29 +141,36 @@ builder.Services.AddSignalR();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
 
+// MQTT Services
 builder.Services.AddSingleton<IMqttClient>(sp => new MqttFactory().CreateMqttClient());
 builder.Services.AddSingleton<MqttPublisher>();
 builder.Services.AddHostedService<MqttWorker>();
 
+// CORS: Cho phép mọi nguồn kết nối (Quan trọng cho Frontend)
 builder.Services.AddCors(opt => opt.AddPolicy("AllowAll", p => 
     p.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()));
 
 var app = builder.Build();
 
-// ===================== 3. TỰ ĐỘNG MIGRATE & SEED DATA =====================
+// ===================== 3. KHỞI TẠO CẤU TRÚC BẢNG & SEED DATA =====================
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     try 
     {
-        Console.WriteLine(">>> Đang khởi tạo Database...");
-        // Ép buộc chạy Migration
-        db.Database.Migrate();
+        Console.WriteLine(">>> Đang kiểm tra và tạo cấu trúc bảng Database...");
+        
+        // SỬA LỖI RELATION NOT EXIST: 
+        // Dùng EnsureCreated để tạo bảng trực tiếp từ Class Model thay vì dùng file Migration
+        db.Database.EnsureCreated(); 
 
+        // Seed thiết bị mẫu
         if (!db.Devices.Any()) {
             db.Devices.Add(new Device { name = "ESP32 Lab", type = "ESP32", is_online = true });
+            Console.WriteLine(">>> Đã tạo thiết bị mẫu: ESP32 Lab");
         }
 
+        // Seed tài khoản admin để test Login
         if (!db.Users.Any()) {
             db.Users.Add(new User { 
                 Username = "admin", 
@@ -169,7 +178,7 @@ using (var scope = app.Services.CreateScope())
                 email = "admin@example.com",
                 created_at = DateTime.UtcNow
             });
-            Console.WriteLine(">>> Đã tạo tài khoản admin/123456");
+            Console.WriteLine(">>> Đã tạo tài khoản mặc định: admin / 123456");
         }
 
         db.SaveChanges();
@@ -177,16 +186,21 @@ using (var scope = app.Services.CreateScope())
     } 
     catch (Exception ex) 
     {
-        Console.WriteLine($">>> LỖI DATABASE: {ex.Message}");
+        Console.WriteLine($">>> LỖI KHỞI TẠO DATABASE: {ex.Message}");
     }
 }
 
-// ===================== 4. MIDDLEWARE =====================
+// ===================== 4. CẤU HÌNH MIDDLEWARE =====================
 app.UseCors("AllowAll");
+
+// Scalar API Documentation
 app.MapOpenApi();
 app.MapScalarApiReference();
+
 app.UseAuthorization();
 app.MapControllers();
+
+// SignalR Hub cho Realtime dữ liệu
 app.MapHub<SensorHub>("/sensorhub"); 
 
 app.Run();
