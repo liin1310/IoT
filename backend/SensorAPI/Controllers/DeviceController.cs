@@ -1,7 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using SensorApi.Models;
 using SensorApi.Services;
-using System.Threading.Tasks;
 
 namespace SensorApi.Controllers
 {
@@ -15,34 +13,35 @@ namespace SensorApi.Controllers
         [HttpPost("light")]
         public async Task<IActionResult> ControlLight([FromBody] DeviceCommand body)
         {
-            await _mqtt.PublishAsync("smarthome/light", body.State);
+            // Sửa lại thành home/cmd/light để khớp ESP32
+            await _mqtt.PublishAsync("home/cmd/light", body.State);
             return Ok(new { message = "Light command sent" });
         }
 
         [HttpPost("fan")]
         public async Task<IActionResult> ControlFan([FromBody] DeviceCommand body)
         {
-            await _mqtt.PublishAsync("smarthome/fan", body.State);
+            // Sửa lại thành home/cmd/fan
+            await _mqtt.PublishAsync("home/cmd/fan", body.State);
             return Ok(new { message = "Fan command sent" });
         }
 
         [HttpPost("door")]
         public async Task<IActionResult> ControlDoor([FromBody] DeviceCommand body)
         {
-            await _mqtt.PublishAsync("smarthome/door", body.State);
+            // Sửa lại thành home/cmd/door
+            await _mqtt.PublishAsync("home/cmd/door", body.State);
             return Ok(new { message = "Door command sent" });
         }
 
         [HttpPost("alarm/stop")]
         public async Task<IActionResult> StopAlarm()
         {
-            await _mqtt.PublishAsync("smarthome/alarm", "OFF");
-            return Ok(new { message = "Alarm stopped" });
+            // Sửa lại thành home/cmd/alarm
+            await _mqtt.PublishAsync("home/cmd/alarm", "OFF");
+            return Ok(new { message = "Alarm stop command sent" });
         }
     }
 
-    public class DeviceCommand
-    {
-        public string State { get; set; } = ""; // ON / OFF / OPEN / CLOSE
-    }
+    public class DeviceCommand { public string State { get; set; } = ""; }
 }
