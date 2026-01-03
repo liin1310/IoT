@@ -107,16 +107,26 @@ string connString;
 
 if (string.IsNullOrEmpty(databaseUrl))
 {
-    // Chạy ở máy cá nhân (Local)
     connString = builder.Configuration.GetConnectionString("DefaultConnection") ?? "";
 }
 else
 {
-    // Chuyển đổi postgres:// thành định dạng Npgsql (Dành cho Render)
-    var databaseUri = new Uri(databaseUrl);
-    var userInfo = databaseUri.UserInfo.Split(':');
-
-    connString = $"Host={databaseUri.Host};Port={databaseUri.Port};Database={databaseUri.AbsolutePath.Trim('/')};Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Require;Trust Server Certificate=true";
+    try 
+    {
+        var databaseUri = new Uri(databaseUrl);
+        var userInfo = databaseUri.UserInfo.Split(':');
+        
+        // --- SỬA LỖI TẠI ĐÂY: Nếu không thấy cổng (-1) thì mặc định là 5432 ---
+        int port = databaseUri.Port == -1 ? 5432 : databaseUri.Port;
+        
+        connString = $"Host={databaseUri.Host};Port={port};Database={databaseUri.AbsolutePath.Trim('/')};Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Require;Trust Server Certificate=true";
+        Console.WriteLine($">>> Đã nhận cấu hình từ Render (Port: {port})");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($">>> Lỗi parse DATABASE_URL: {ex.Message}");
+        connString = databaseUrl; 
+    }
 }
 
 builder.Services.AddDbContext<AppDbContext>(opt => 
