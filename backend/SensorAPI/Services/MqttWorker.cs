@@ -106,8 +106,8 @@ using MQTTnet;
 using MQTTnet.Client;
 using SensorApi.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.SignalR;
-using SensorApi.Realtime;
+using Microsoft.AspNetCore.SignalR; 
+using SensorApi.Realtime; //gọi SensorHub
 
 namespace SensorApi.Services
 {
@@ -115,12 +115,18 @@ namespace SensorApi.Services
     {
         private readonly IConfiguration _cfg;
         private readonly IServiceScopeFactory _scopeFactory;
-        private readonly IHubContext<SensorHub> _hubContext;
+        private readonly ILogger<MqttWorker> _logger;
+        private readonly IHubContext<SensorHub> _hubContext; // Thêm HubContext
 
-        public MqttWorker(IConfiguration cfg, IServiceScopeFactory scopeFactory, IHubContext<SensorHub> hubContext)
+        public MqttWorker(
+            IConfiguration cfg, 
+            IServiceScopeFactory scopeFactory, 
+            ILogger<MqttWorker> logger,
+            IHubContext<SensorHub> hubContext) // Inject Hub vào constructor
         {
             _cfg = cfg;
             _scopeFactory = scopeFactory;
+            _logger = logger;
             _hubContext = hubContext;
         }
 
@@ -129,61 +135,89 @@ namespace SensorApi.Services
             var mqttFactory = new MqttFactory();
             using var mqttClient = mqttFactory.CreateMqttClient();
 
+            // Lấy thông tin từ Environment Variables trên Render
             var options = new MqttClientOptionsBuilder()
-                .WithTcpServer(_cfg["MqttSettings:Broker"] ?? "broker.hivemq.com", 1883)
+                .WithTcpServer(_cfg["MqttSettings:Broker"], 8883)
+                .WithCredentials(_cfg["MqttSettings:User"], _cfg["MqttSettings:Pass"])
+                .WithTlsOptions(o =>
+                {
+                    o.UseTls(); 
+                    o.WithCertificateValidationHandler(_ => true);
+                })
                 .Build();
 
             mqttClient.ApplicationMessageReceivedAsync += async e =>
             {
                 var topic = e.ApplicationMessage.Topic;
                 var payload = Encoding.UTF8.GetString(e.ApplicationMessage.PayloadSegment);
-                await ProcessData(topic, payload);
+                await SaveToSmarthomeDb(topic, payload);
             };
 
             while (!stoppingToken.IsCancellationRequested)
             {
-                try {
-                    if (!mqttClient.IsConnected) {
+                try
+                {
+                    if (!mqttClient.IsConnected)
+                    {
                         await mqttClient.ConnectAsync(options, stoppingToken);
                         await mqttClient.SubscribeAsync("home/data/#");
                         await mqttClient.SubscribeAsync("home/status/fire");
+                        _logger.LogInformation(">>> [MQTT Worker] Connected & Listening for Hardware data...");
                     }
-                } catch { }
+                }
+                catch (Exception ex) { _logger.LogError($">>> [MQTT Error]: {ex.Message}"); }
                 await Task.Delay(5000, stoppingToken);
             }
         }
 
-        private async Task ProcessData(string topic, string payload)
+        private async Task SaveToSmarthomeDb(string topic, string payload)
         {
             using var scope = _scopeFactory.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            var device = await context.Devices.FirstOrDefaultAsync();
+
+            var device = await context.Devices.OrderBy(d => d.id).FirstOrDefaultAsync();
             if (device == null) return;
 
             double val = 0;
-            string type = topic switch {
-                "home/data/temp" => "Temperature",
-                "home/data/humid" => "Humidity",
-                "home/data/gas" => "Gas",
-                "home/status/fire" => "FireStatus",
-                _ => "Unknown"
-            };
+            string type = "";
 
-            if (type == "FireStatus") val = (payload == "WARNING") ? 1.0 : 0.0;
-            else if (!double.TryParse(payload, out val)) return;
+            if (topic == "home/status/fire")
+            {
+                type = "FireStatus";
+                val = (payload == "WARNING") ? 1.0 : 0.0;
+            }
+            else
+            {
+                type = topic switch
+                {
+                    "home/data/temp" => "Temperature",
+                    "home/data/humid" => "Humidity",
+                    "home/data/gas" => "Gas",
+                    _ => "Unknown"
+                };
+                if (!double.TryParse(payload, out val)) return;
+            }
 
-            var newData = new SensorData {
+            var newData = new SensorData
+            {
                 DeviceId = device.id,
                 type = type,
                 value = val,
                 received_at = DateTimeOffset.UtcNow
             };
 
+            // 1. Lưu vào Database (Lịch sử)
             context.SensorDataEntries.Add(newData);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(); 
+            _logger.LogInformation($"[smarthome-db] Saved {type}: {payload}");
 
-            // ĐẨY REALTIME LÊN WEB
-            await _hubContext.Clients.All.SendAsync("ReceiveSensorData", newData);
+            // 2. GỬI REALTIME QUA SIGNALR (Đẩy lên web ngay lập tức)
+            // Frontend sẽ lắng nghe sự kiện "ReceiveSensorData"
+            await _hubContext.Clients.All.SendAsync("ReceiveSensorData", new {
+                type = newData.type,
+                value = newData.value,
+                time = newData.received_at
+            });
         }
     }
 }
