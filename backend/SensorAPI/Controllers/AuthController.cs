@@ -1,15 +1,30 @@
-[ApiController]
-[Route("api/auth")]
-public class AuthController : ControllerBase
-{
-    private readonly AppDbContext _db;
-    public AuthController(AppDbContext db) => _db = db;
+using Microsoft.AspNetCore.Mvc;
+using SensorApi.Models; // Quan trọng để thấy AppDbContext
+using System.Linq;
 
-    [HttpPost("login")]
-    public IActionResult Login(LoginRequest req)
+namespace SensorApi.Controllers
+{
+    [ApiController]
+    [Route("api/auth")]
+    public class AuthController : ControllerBase
     {
-        var user = _db.Users.SingleOrDefault(u => u.Username == req.Username && u.PasswordHash == req.Password);
-        if (user == null) return Unauthorized(new { message = "Sai tài khoản" });
-        return Ok(new { token = "jwt-token-logic-here", username = user.Username });
+        private readonly AppDbContext _db;
+        public AuthController(AppDbContext db) { _db = db; }
+
+        [HttpPost("login")]
+        public IActionResult Login([FromBody] LoginRequest req)
+        {
+            var user = _db.Users.SingleOrDefault(u => u.Username == req.Username);
+            if (user == null || user.PasswordHash != req.Password)
+                return Unauthorized(new { message = "Sai tài khoản hoặc mật khẩu" });
+
+            return Ok(new { token = "dummy-jwt", username = user.Username });
+        }
+    }
+
+    public class LoginRequest
+    {
+        public string Username { get; set; } = "";
+        public string Password { get; set; } = "";
     }
 }
