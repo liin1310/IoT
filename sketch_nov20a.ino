@@ -1,11 +1,9 @@
-#include <WiFi.h>
 #include <PubSubClient.h>
 #include <WiFiClientSecure.h>
 #include <DHT.h>
+#include <WiFiManager.h> 
 
-// Cấu hình Wifi và MQTT
-const char* ssid = "Liin";
-const char* password = "25102004";
+// Cấu hình MQTT
 const char* mqtt_server = "954aa7485e03459f8a6ba21673896477.s1.eu.hivemq.cloud";
 const int mqtt_port = 8883;
 const char* mqtt_user = "user1";
@@ -148,12 +146,15 @@ void setup() {
   digitalWrite(LED_LIGHT_PIN, LOW);
   digitalWrite(BUZZER_PIN, LOW);
 
-  // Kết nối Wifi
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500); Serial.print(".");
+  WiFiManager vm;
+  vm.setConfigPortalTimeout(180); //Set timeout 3ph
+  Serial.println("Đang kết nối Wifi...");
+  bool res = vm.autoConnect("ESP32-Nhom27");
+  if(!res){
+    Serial.println("Kết nối thất bại. ESP32 sẽ khởi động lại");
+    ESP.restart();
   }
-  Serial.println("\nWifi Connected");
+  else Serial.println("\nWifi kết nối thành công");
 
   espClient.setInsecure();
   client.setServer(mqtt_server, mqtt_port);
