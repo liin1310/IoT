@@ -9,6 +9,7 @@ using Scalar.AspNetCore;
 var builder = WebApplication.CreateBuilder(args);
 
 // ===================== 1. DATABASE =====================
+
 // - appsettings.Development.json (local)
 // - Environment Variable: ConnectionStrings__DefaultConnection (Render)
 builder.Services.AddDbContext<AppDbContext>(opt =>
@@ -55,8 +56,11 @@ using (var scope = app.Services.CreateScope())
     {
         Console.WriteLine(">>> Checking database...");
 
-        // Dùng cho LOCAL / DB MỚI
+        // Tạo database nếu chưa có
         db.Database.EnsureCreated();
+
+        // Áp dụng các migration còn thiếu
+        db.Database.Migrate();
 
         if (!db.Devices.Any())
         {
