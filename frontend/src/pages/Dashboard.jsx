@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { apiFetch } from '../api';
 import DeviceCard from '../components/DeviceCard';
 import VoiceButton from '../components/VoiceButton';
 import { useNavigate } from 'react-router-dom';
@@ -24,7 +25,7 @@ export default function Dashboard(){
     const newState = d.state === 'ON' ? 'OFF' : 'ON';
     setDevices(devs => devs.map(x => x.id===d.id ? {...x, state: newState} : x));
     // send command to backend if available (best-effort)
-    try{ fetch(`/api/device/${d.id==='living'?'light':'fan'}`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ State: newState }) }); }catch(e){}
+    try{ apiFetch(`/api/device/${d.id==='living'?'light':'fan'}`, { method:'POST', body: JSON.stringify({ State: newState }) }); }catch(e){}
   }
 
   function allOn(){ setDevices(ds => ds.map(d=> ({...d, state:'ON'}))); }

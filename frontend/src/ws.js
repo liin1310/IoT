@@ -1,4 +1,5 @@
 import { HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
+import { HOST } from './api';
 
 let connection = null;
 const listeners = [];
@@ -27,7 +28,7 @@ function emitMock() {
 export async function startSignalR() {
   if (connection) return connection;
   connection = new HubConnectionBuilder()
-    .withUrl('/sensorhub')
+    .withUrl(HOST + '/sensorhub')
     .configureLogging(LogLevel.Information)
     .withAutomaticReconnect()
     .build();
