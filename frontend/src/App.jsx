@@ -1,12 +1,25 @@
 import React from 'react';
-import SensorCard from './components/SensorCard';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import Login from './pages/Login';
+import Dashboard from './pages/Dashboard';
+import Sensors from './pages/Sensors';
+import Layout from './components/Layout';
 
 function App() {
-  const sample = { temp: '28.3', humidity: 63, light: 420, timestamp: new Date().toISOString() };
+  const isAuth = !!localStorage.getItem('iot_token');
+
   return (
-    <div style={{padding:40, background:'#f5f7fb', minHeight:'100vh'}}>
-      <SensorCard data={sample} />
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/" element={isAuth ? <Navigate to="/dashboard" /> : <Navigate to="/login" />} />
+        <Route element={isAuth ? <Layout /> : <Navigate to="/login" /> }>
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/sensors" element={<Sensors />} />
+        </Route>
+        
+      </Routes>
+    </BrowserRouter>
   );
 }
 
