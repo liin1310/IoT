@@ -49,49 +49,67 @@ builder.Services.AddCors(opt =>
 var app = builder.Build();
 
 // ===================== 3. INIT DATABASE & SEED =====================
+// ===================== 3. INIT DATABASE & SEED =====================
 using (var scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    var services = scope.ServiceProvider;
+    var db = services.GetRequiredService<AppDbContext>();
+
     try
     {
-        Console.WriteLine(">>> Checking database...");
+        Console.WriteLine(">>> Đang kiểm tra và cập nhật Database...");
 
-        // Tạo database nếu chưa có
-        db.Database.EnsureCreated();
-
-        // Áp dụng các migration còn thiếu
+        // Tạo database nếu chưa tồn tại
+        //db.Database.EnsureCreated();
+        // Áp dụng các migration chưa được áp dụng
         db.Database.Migrate();
+
+        // Kiểm tra và thêm dữ liệu mẫu
+        bool hasChanges = false;
 
         if (!db.Devices.Any())
         {
+            Console.WriteLine(">>> Đang tạo dữ liệu mẫu cho Devices...");
             db.Devices.Add(new Device
             {
                 name = "ESP32 Lab",
                 type = "ESP32",
                 is_online = true
             });
+            hasChanges = true;
         }
 
         if (!db.Users.Any())
         {
+            Console.WriteLine(">>> Đang tạo dữ liệu mẫu cho Users...");
             db.Users.Add(new User
             {
                 Username = "admin",
-                PasswordHash = "123456",
+                PasswordHash = "123456", 
                 email = "admin@example.com",
                 created_at = DateTime.UtcNow
             });
+            hasChanges = true;
         }
 
-        db.SaveChanges();
-        Console.WriteLine(">>> Database ready!");
+        if (hasChanges)
+        {
+            db.SaveChanges();
+            Console.WriteLine(">>> Đã nạp dữ liệu mẫu thành công!");
+        }
+
+        Console.WriteLine(">>> Database đã sẵn sàng!");
     }
     catch (Exception ex)
     {
-        Console.WriteLine($">>> Database error: {ex.Message}");
+        // Ghi log lỗi chi tiết để debug trên Render
+        Console.WriteLine($">>> LỖI DATABASE: {ex.Message}");
+        if (ex.InnerException != null)
+        {
+            Console.WriteLine($">>> Chi tiết: {ex.InnerException.Message}");
+        }
     }
 }
-
 // ===================== 4. MIDDLEWARE =====================
 app.UseCors("AllowAll");
 

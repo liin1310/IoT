@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
-using SensorApi.Models; // Quan trọng để thấy AppDbContext
+using SensorApi.Models; 
 using System.Linq;
 
 namespace SensorApi.Controllers

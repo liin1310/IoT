@@ -12,7 +12,7 @@ using SensorApi.Models;
 namespace SensorApi.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260104064825_InitialCreate")]
+    [Migration("20260104084302_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
