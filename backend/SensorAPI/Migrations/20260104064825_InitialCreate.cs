@@ -13,7 +13,7 @@ namespace SensorApi.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Devices",
+                name: "devices_table",
                 columns: table => new
                 {
                     id = table.Column<int>(type: "integer", nullable: false)
@@ -24,7 +24,23 @@ namespace SensorApi.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Devices", x => x.id);
+                    table.PrimaryKey("PK_devices_table", x => x.id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "users_table",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Username = table.Column<string>(type: "text", nullable: false),
+                    PasswordHash = table.Column<string>(type: "text", nullable: false),
+                    email = table.Column<string>(type: "text", nullable: false),
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_users_table", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -42,9 +58,9 @@ namespace SensorApi.Migrations
                 {
                     table.PrimaryKey("PK_sensor_data_table", x => x.id);
                     table.ForeignKey(
-                        name: "FK_sensor_data_table_Devices_device_id",
+                        name: "FK_sensor_data_table_devices_table_device_id",
                         column: x => x.device_id,
-                        principalTable: "Devices",
+                        principalTable: "devices_table",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -62,7 +78,10 @@ namespace SensorApi.Migrations
                 name: "sensor_data_table");
 
             migrationBuilder.DropTable(
-                name: "Devices");
+                name: "users_table");
+
+            migrationBuilder.DropTable(
+                name: "devices_table");
         }
     }
 }
