@@ -23,7 +23,7 @@ namespace SensorApi.Controllers
             return Ok(data);
         }
 
-        //Kiểm tra cháy dựa trên logic WARNING (1.0) của P.Linh
+        //Kiểm tra cháy dựa trên logic WARNING 
         [HttpGet("check-fire")]
         public async Task<IActionResult> CheckFire()
         {
@@ -33,7 +33,7 @@ namespace SensorApi.Controllers
                 .AnyAsync(s => s.received_at >= last60Seconds
                             && (
                                 (s.type == "FireStatus" && s.value == 1.0) ||
-                                (s.type == "Gas" && s.value >= 2000.0) // Thêm điều kiện này
+                                (s.type == "Gas" && s.value >= 2000.0) //điều kiện cảnh báo
                                )
                 );
 
@@ -42,12 +42,28 @@ namespace SensorApi.Controllers
 
         // API nhận dữ liệu
         [HttpPost]
-        public async Task<IActionResult> ReceiveData(SensorData data)
+        public async Task<IActionResult> ReceiveData(SensorDataCreateDto dto)
         {
-            data.received_at = DateTimeOffset.UtcNow;
-            _context.SensorDataEntries.Add(data); 
+            var data = new SensorData
+            {
+                DeviceId = dto.DeviceId,
+                type = dto.type,
+                value = dto.value,
+                received_at = DateTimeOffset.UtcNow
+            };
+
+            _context.SensorDataEntries.Add(data);
             await _context.SaveChangesAsync();
             return Ok(data);
         }
+
+
+        public class SensorDataCreateDto
+        {
+            public int DeviceId { get; set; }
+            public string type { get; set; } = "";
+            public double value { get; set; }
+        }
+
     }
 }

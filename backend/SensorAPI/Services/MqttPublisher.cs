@@ -39,7 +39,7 @@ namespace SensorApi.Services
                     .Build();
 
                 await _client.PublishAsync(message);
-                Console.WriteLine($"📤 MQTT Publish: [{topic}] {payload}");
+                Console.WriteLine($"MQTT Publish: [{topic}] {payload}");
             }
             catch (Exception ex)
             {

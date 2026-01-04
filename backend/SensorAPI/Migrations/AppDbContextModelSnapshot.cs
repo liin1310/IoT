@@ -43,7 +43,7 @@ namespace SensorApi.Migrations
 
                     b.HasKey("id");
 
-                    b.ToTable("Devices");
+                    b.ToTable("devices_table", (string)null);
                 });
 
             modelBuilder.Entity("SensorApi.Models.SensorData", b =>
@@ -73,6 +73,34 @@ namespace SensorApi.Migrations
                     b.HasIndex("DeviceId");
 
                     b.ToTable("sensor_data_table", (string)null);
+                });
+
+            modelBuilder.Entity("SensorApi.Models.User", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("created_at")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("email")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("users_table", (string)null);
                 });
 
             modelBuilder.Entity("SensorApi.Models.SensorData", b =>
