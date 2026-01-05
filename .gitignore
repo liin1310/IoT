@@ -4,3 +4,7 @@
 **/node_modules/
 *.user
 *.suo
+
+firebase_key.json
+
+.env

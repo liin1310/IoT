@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using SensorApi.Models; 
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
+
 
 namespace SensorApi.Controllers
 {
@@ -42,6 +44,23 @@ namespace SensorApi.Controllers
 
             return Ok(new { token = "dummy-jwt", username = user.Username });
         }
+
+        [HttpPost("save-fcm-token")]
+        public IActionResult SaveFcmToken([FromBody] SaveFcmTokenRequest req)
+        {
+            if (string.IsNullOrWhiteSpace(req.FcmToken))
+                return BadRequest(new { message = "FCM token is required" });
+
+            var user = _db.Users.SingleOrDefault(u => u.Username == req.Username);
+            if (user == null)
+                return NotFound(new { message = "User not found" });
+
+            user.FcmToken = req.FcmToken;
+            _db.SaveChanges();
+
+            return Ok(new { message = "FCM token saved" });
+        }
+
     }
 
     public class LoginRequest
@@ -56,4 +75,11 @@ namespace SensorApi.Controllers
         public string Password { get; set; } = "";
         public string Email { get; set; } = "";
     }
+
+    public class SaveFcmTokenRequest
+    {
+        public string Username { get; set; } = "";
+        public string FcmToken { get; set; } = "";
+    }
+
 }

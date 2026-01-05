@@ -6,6 +6,11 @@ using Microsoft.AspNetCore.SignalR;
 using SensorApi.Models;
 using SensorApi.Realtime;
 
+using FirebaseAdmin;
+using FirebaseAdmin.Messaging;
+using Google.Apis.Auth.OAuth2;
+
+
 namespace SensorApi.Services
 {
     public class MqttWorker : BackgroundService
@@ -20,11 +25,20 @@ namespace SensorApi.Services
             IServiceScopeFactory scopeFactory,
             ILogger<MqttWorker> logger,
             IHubContext<SensorHub> hubContext)
-        {
+        {//
             _cfg = cfg;
             _scopeFactory = scopeFactory;
             _logger = logger;
             _hubContext = hubContext;
+
+            //Khởi tạo Firebase nếu chưa có
+            if (FirebaseApp.DefaultInstance == null)
+            {
+                FirebaseApp.Create(new AppOptions()
+                {
+                    Credential = GoogleCredential.FromFile("firebase_key.json")
+                });
+            }
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -145,6 +159,42 @@ namespace SensorApi.Services
                     time = data.received_at
                 }
             );
+
+            //Gửi thông báo đẩy qua Firebase khi có cảnh báo
+            if (type == "FireStatus" && value == 1.0)
+            {
+                await SendFirebaseNotification("🚨 CẢNH BÁO CHÁY!", "Phát hiện hỏa hoạn! Kiểm tra ngay lập tức!");
+            }
+            else if (type == "Gas" && value >= 2000.0)
+            {
+                await SendFirebaseNotification("⚠️ RÒ RỈ GAS!", $"Nồng độ Gas nguy hiểm đo được: {value}");
+            }
+        }
+
+        //ham gửi thông báo đẩy Firebase
+        private async Task SendFirebaseNotification(string title, string body)
+        {
+            try
+            {
+                // Tạo tin nhắn
+                var message = new FirebaseAdmin.Messaging.Message()
+                {
+                    Notification = new FirebaseAdmin.Messaging.Notification() //Tạo phần thông báo
+                    {
+                        Title = title,
+                        Body = body,
+                    },
+                    Topic = "all_users",
+                };
+
+                // Gửi tin nhắn
+                string response = await FirebaseMessaging.DefaultInstance.SendAsync(message);
+                _logger.LogInformation($">>> Firebase Push Sent thành công: {response}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($">>> Lỗi gửi Firebase: {ex.Message}");
+            }
         }
     }
 }

@@ -1,12 +1,21 @@
-﻿using Microsoft.EntityFrameworkCore;
-using SensorApi.Models;
-using SensorApi.Services;
-using SensorApi.Realtime;
+﻿using FirebaseAdmin;
+using Google.Apis.Auth.OAuth2;
+using Microsoft.EntityFrameworkCore;
 using MQTTnet;
 using MQTTnet.Client;
 using Scalar.AspNetCore;
+using SensorApi.Models;
+using SensorApi.Realtime;
+using SensorApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+//Khởi tạo Firebase Admin SDK
+FirebaseApp.Create(new AppOptions()
+{
+    Credential = GoogleCredential.FromFile("firebase_key.json")
+});
+
 
 // ===================== 1. DATABASE =====================
 
@@ -24,7 +33,7 @@ builder.Services.AddDbContext<AppDbContext>(opt =>
     );
 });
 
-// ===================== 2. SERVICES =====================
+// SERVICES 
 builder.Services.AddControllers();
 builder.Services.AddSignalR();
 builder.Services.AddEndpointsApiExplorer();
@@ -48,8 +57,7 @@ builder.Services.AddCors(opt =>
 
 var app = builder.Build();
 
-// ===================== 3. INIT DATABASE & SEED =====================
-// ===================== 3. INIT DATABASE & SEED =====================
+// INIT DATABASE & SEED 
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -110,7 +118,7 @@ using (var scope = app.Services.CreateScope())
         }
     }
 }
-// ===================== 4. MIDDLEWARE =====================
+// MIDDLEWARE 
 app.UseCors("AllowAll");
 
 app.MapOpenApi();

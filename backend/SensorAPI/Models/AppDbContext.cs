@@ -8,10 +8,8 @@ namespace SensorApi.Models
             : base(options)
         {
         }
-
-        // --- DÒNG QUAN TRỌNG ĐỂ FIX LỖI AUTH ---
         public DbSet<User> Users { get; set; } 
-        // ---------------------------------------
+
 
         public DbSet<Device> Devices { get; set; }
         public DbSet<SensorData> SensorDataEntries { get; set; }
