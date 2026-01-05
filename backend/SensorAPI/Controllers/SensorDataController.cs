@@ -37,7 +37,7 @@ namespace SensorApi.Controllers
 
             await FirebaseMessaging.DefaultInstance.SendEachForMulticastAsync(message);
         }
-        }
+
 
         [HttpGet("history/{type}")]
         public async Task<IActionResult> GetHistory(string type)
