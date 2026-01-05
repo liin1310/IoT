@@ -20,9 +20,10 @@ const char* mqtt_pass = "Linh13102004";
 
 #define RELAY1_PIN  25 //Giả lập QUẠT
 #define SERVO_PIN  26 
+
 #define SW_LIGHT_PIN  27
 #define SW_ALARM_PIN  14
-
+#define SW_DOOR_PIN   33 
 //TOPIC
 //1. topic gửi dữ liệu (publish)
 #define TOPIC_DATA_TEMP   "home/data/temp"
@@ -51,9 +52,10 @@ float tempThreshold = 45.0;
 unsigned long lastMsg = 0;
 bool isAlarmActive = false;   // Trạng thái đang báo động
 bool isAlarmSilenced = false; // Trạng thái đã bấm nút tắt còi
+
 int lastLightSwState = HIGH; //Trạng thái ban đầu của công tắc
 int lastStopSwState = HIGH;
-
+int lastDoorSwState = HIGH;
 // HÀM XỬ LÝ LỆNH TỪ SERVER
 void callback(char* topic, byte* payload, unsigned int length) {
   String message = "";
@@ -183,6 +185,28 @@ void checkSwitches() {
         lastStopSwState = currentStopState;
      }
   }
+
+  //CÔNG TẮC CỬA
+  int currentDoorState = digitalRead(SW_DOOR_PIN);
+  if (currentDoorState != lastDoorSwState) {
+    delay(30);
+    if (digitalRead(SW_DOOR_PIN) == currentDoorState) {
+      
+      // Logic đảo chiều Cửa (Đang đóng -> Mở, Đang Mở -> Đóng)
+      int currentAngle = doorServo.read();
+      
+      if (currentAngle < 45) {
+         doorServo.write(90);
+         client.publish(TOPIC_STATUS_DOOR, "ON");
+         Serial.println("-> Switch: MO CUA");
+      } else { 
+         doorServo.write(0);  
+         client.publish(TOPIC_STATUS_DOOR, "OFF");
+         Serial.println("-> Switch: DONG CUA");
+      }
+      lastDoorSwState = currentDoorState;
+    }
+  }
 }
 
 void setup() {
@@ -198,6 +222,7 @@ void setup() {
   pinMode(RELAY1_PIN, OUTPUT);
   pinMode(SW_LIGHT_PIN, INPUT_PULLUP);
   pinMode(SW_ALARM_PIN, INPUT_PULLUP);
+  pinMode(SW_DOOR_PIN, INPUT_PULLUP);
 
   //Trạng thái ban đầu
   digitalWrite(RELAY1_PIN, HIGH);
@@ -208,6 +233,7 @@ void setup() {
   // Đọc trạng thái ban đầu
   lastLightSwState = digitalRead(SW_LIGHT_PIN);
   lastStopSwState = digitalRead(SW_ALARM_PIN);
+  lastDoorSwState = digitalRead(SW_DOOR_PIN);
 
   WiFiManager vm;
   vm.setConfigPortalTimeout(180); //Set timeout 3ph
