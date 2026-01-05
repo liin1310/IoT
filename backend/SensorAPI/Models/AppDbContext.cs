@@ -29,17 +29,10 @@ namespace SensorApi.Models
 
             });
 
-            modelBuilder.Entity<SensorData>(entity =>
-            {
+            modelBuilder.Entity<SensorData>(entity => {
                 entity.ToTable("sensor_data_table");
-
-                entity.Property(e => e.DeviceId)
-                      .HasColumnName("device_id");
-
-                entity.HasOne(e => e.Device)
-                      .WithMany()
-                      .HasForeignKey(e => e.DeviceId)
-                      .OnDelete(DeleteBehavior.Restrict);
+                entity.Property(e => e.DeviceId).HasColumnName("device_id");
+                entity.HasOne(e => e.Device).WithMany().HasForeignKey(e => e.DeviceId).OnDelete(DeleteBehavior.Restrict);
             });
 
             modelBuilder.Entity<UserDevice>(entity => {

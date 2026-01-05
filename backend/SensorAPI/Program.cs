@@ -10,17 +10,43 @@ using SensorApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-//Khởi tạo Firebase Admin SDK
-FirebaseApp.Create(new AppOptions()
+// ===================== KHỞI TẠO FIREBASE (ƯU TIÊN BIẾN MÔI TRƯỜNG) =====================
+var firebaseConfigJson = builder.Configuration["FIREBASE_CONFIG"];
+var localKeyPath = "firebase_key.json";
+
+try
 {
-    Credential = GoogleCredential.FromFile("firebase_key.json")
-});
+    if (!string.IsNullOrEmpty(firebaseConfigJson))
+    {
+        // 1. Nếu có biến môi trường trên Render, dùng chuỗi JSON
+        FirebaseApp.Create(new AppOptions()
+        {
+            Credential = GoogleCredential.FromJson(firebaseConfigJson)
+        });
+        Console.WriteLine(">>> Firebase initialized via Environment Variable.");
+    }
+    else if (File.Exists(localKeyPath))
+    {
+        // 2. Nếu không có biến môi trường nhưng có file (Local), dùng file
+        FirebaseApp.Create(new AppOptions()
+        {
+            Credential = GoogleCredential.FromFile(localKeyPath)
+        });
+        Console.WriteLine(">>> Firebase initialized via local firebase_key.json.");
+    }
+    else
+    {
+        Console.WriteLine(">>> WARNING: No Firebase configuration found. Push notifications will be disabled.");
+    }
+}
+catch (Exception ex)
+{
+    Console.WriteLine($">>> FIREBASE INIT ERROR: {ex.Message}");
+}
 
 
 // ===================== 1. DATABASE =====================
 
-// - appsettings.Development.json (local)
-// - Environment Variable: ConnectionStrings__DefaultConnection (Render)
 builder.Services.AddDbContext<AppDbContext>(opt =>
 {
     opt.UseNpgsql(
@@ -66,13 +92,8 @@ using (var scope = app.Services.CreateScope())
     try
     {
         Console.WriteLine(">>> Đang kiểm tra và cập nhật Database...");
-
-        // Tạo database nếu chưa tồn tại
-        //db.Database.EnsureCreated();
-        // Áp dụng các migration chưa được áp dụng
         db.Database.Migrate();
 
-        // Kiểm tra và thêm dữ liệu mẫu
         bool hasChanges = false;
 
         if (!db.Devices.Any())
@@ -93,7 +114,7 @@ using (var scope = app.Services.CreateScope())
             db.Users.Add(new User
             {
                 Username = "admin",
-                PasswordHash = "123456", 
+                PasswordHash = "123456",
                 email = "admin@example.com",
                 created_at = DateTime.UtcNow
             });
@@ -110,7 +131,6 @@ using (var scope = app.Services.CreateScope())
     }
     catch (Exception ex)
     {
-        // Ghi log lỗi chi tiết để debug trên Render
         Console.WriteLine($">>> LỖI DATABASE: {ex.Message}");
         if (ex.InnerException != null)
         {
@@ -118,12 +138,11 @@ using (var scope = app.Services.CreateScope())
         }
     }
 }
+
 // MIDDLEWARE 
 app.UseCors("AllowAll");
-
 app.MapOpenApi();
 app.MapScalarApiReference();
-
 app.UseAuthorization();
 app.MapControllers();
 

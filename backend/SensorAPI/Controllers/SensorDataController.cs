@@ -35,7 +35,8 @@ namespace SensorApi.Controllers
                 }
             };
 
-            await FirebaseMessaging.DefaultInstance.SendMulticastAsync(message);
+            await FirebaseMessaging.DefaultInstance.SendEachForMulticastAsync(message);
+        }
         }
 
         [HttpGet("history/{type}")]

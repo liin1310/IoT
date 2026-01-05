@@ -176,25 +176,27 @@ namespace SensorApi.Services
         {
             try
             {
-                // Tạo tin nhắn
-                var message = new FirebaseAdmin.Messaging.Message()
+                using var scope = _scopeFactory.CreateScope();
+                var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+                // Lấy tất cả token trong nhà
+                var tokens = await context.UserDevices.Select(d => d.FcmToken).ToListAsync();
+
+                if (tokens.Count == 0) return;
+
+                var message = new MulticastMessage()
                 {
-                    Notification = new FirebaseAdmin.Messaging.Notification() //Tạo phần thông báo
-                    {
-                        Title = title,
-                        Body = body,
-                    },
-                    Topic = "all_users",
+                    Tokens = tokens,
+                    Notification = new Notification() { Title = title, Body = body }
                 };
 
-                // Gửi tin nhắn
-                string response = await FirebaseMessaging.DefaultInstance.SendAsync(message);
-                _logger.LogInformation($">>> Firebase Push Sent thành công: {response}");
+                await FirebaseMessaging.DefaultInstance.SendEachForMulticastAsync(message);
+                _logger.LogInformation(">>> Đã đẩy thông báo tới toàn bộ thiết bị trong nhà.");
             }
             catch (Exception ex)
             {
                 _logger.LogError($">>> Lỗi gửi Firebase: {ex.Message}");
             }
         }
+
     }
-}
