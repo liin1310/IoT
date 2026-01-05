@@ -1,10 +1,10 @@
 const HOST = 'https://iot-smarthome-pyvi.onrender.com';
-// Use host root for API calls (controllers are mounted at /api/... in backend)
+
 const API_BASE = `${HOST}`;
 
 async function apiFetch(path, options = {}) {
   const url = API_BASE + path;
-  const token = localStorage.getItem('iot_token');
+  const token = localStorage.getItem('token');
   const headers = Object.assign({}, options.headers || {});
 
   if (token) headers['Authorization'] = `Bearer ${token}`;

@@ -52,7 +52,7 @@ export function parseCommand(text) {
   const intent = { device: null, state: null };
 
   if (t.includes('bật') || t.includes('bật lên') || t.includes('on')) intent.state = 'ON';
-  if (t.includes('tắt') || t.includes('off')) intent.state = 'OFF';
+  if (t.includes('tắt') || t.includes('đóng') || t.includes('off')) intent.state = 'OFF';
 
   if (t.includes('đèn') || t.includes('ánh sáng') || t.includes('light')) intent.device = 'light';
   if (t.includes('quạt') || t.includes('fan')) intent.device = 'fan';
@@ -85,12 +85,13 @@ async function handleCommand(text) {
       res = await apiFetch(path, { method: 'POST', body });
     }
 
+    const baseDetail = { device: cmd.device, state: cmd.state || 'ON', text };
     if (res && (res.ok || res.status === 200 || res.status === 204)) {
-      const detail = { ok: true, message: `Gửi lệnh ${cmd.device} ${cmd.state||''}`, text };
+      const detail = Object.assign({ ok: true, message: `Gửi lệnh ${cmd.device} ${cmd.state||''}` }, baseDetail);
       window.dispatchEvent(new CustomEvent('voice-command-result', { detail }));
       return detail;
     } else {
-      const detail = { ok: false, message: 'Lỗi khi gửi lệnh', text };
+      const detail = Object.assign({ ok: false, message: 'Lỗi khi gửi lệnh' }, baseDetail);
       window.dispatchEvent(new CustomEvent('voice-command-result', { detail }));
       return detail;
     }

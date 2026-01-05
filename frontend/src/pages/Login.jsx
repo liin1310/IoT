@@ -29,15 +29,28 @@ export default function Login() {
       return;
     }
 
-    // Login flow
     if (!username || !password) { setError('Vui lòng nhập tên và mật khẩu'); return; }
     try {
-      await login({ username, password });
-      nav('/dashboard');
+      console.log("Đang gửi yêu cầu đăng nhập...");
+      const response = await login({ username, password });
+      
+      console.log("Kết quả trả về:", response); 
+
+      if (response && response.token) {
+          localStorage.setItem('token', response.token); 
+
+          localStorage.setItem('user', JSON.stringify({ username: response.username }));
+
+          nav('/dashboard');
+      } else {
+          setError("Phản hồi từ server không chứa Token hợp lệ.");
+      }
     } catch (ex) {
-      setError(ex?.message || 'Đăng nhập thất bại');
+      console.error("Lỗi đăng nhập:", ex);
+      setError(ex?.message || 'Đăng nhập thất bại. Kiểm tra lại tài khoản.');
     }
   }
+
 
   return (
     <div className="login-page">
@@ -50,12 +63,19 @@ export default function Login() {
           <form onSubmit={submit} style={{marginTop:18}}>
             <div className="form-row">
               <label className="form-label">Tên đăng nhập</label>
-              <input className="form-input" value={username} onChange={e=>setUsername(e.target.value)} placeholder="email@domain.com" />
+              <input 
+                name="username"           // Thêm cái này
+                autoComplete="username"   // Thêm cái này
+                className="form-input" 
+                value={username} 
+                onChange={e=>setUsername(e.target.value)} 
+                placeholder="email@domain.com" 
+              />
             </div>
 
             <div className="form-row">
               <label className="form-label">Mật khẩu</label>
-              <input type="password" className="form-input" value={password} onChange={e=>setPassword(e.target.value)} placeholder="Nhập mật khẩu" />
+              <input type="password" className="form-input" value={password} onChange={e=>setPassword(e.target.value)} placeholder="Nhập mật khẩu" autocomplete="current-password" />
             </div>
 
             {isRegister && (

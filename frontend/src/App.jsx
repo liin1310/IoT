@@ -6,7 +6,7 @@ import Sensors from './pages/Sensors';
 import Layout from './components/Layout';
 
 function App() {
-  const isAuth = !!localStorage.getItem('iot_token');
+  const isAuth = !!localStorage.getItem('token');
 
   return (
     <BrowserRouter>

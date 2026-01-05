@@ -11,6 +11,8 @@ export default function VoiceButton() {
   const [transcript, setTranscript] = useState('');
   const [lastResult, setLastResult] = useState(null);
   const [pending, setPending] = useState(null);
+  const [autoCountdown, setAutoCountdown] = useState(0);
+  const countdownRef = React.useRef(null);
 
   useEffect(() => {
     function onStart() { setListening(true); }
@@ -43,6 +45,35 @@ export default function VoiceButton() {
       stopRecognition();
     }
   }
+
+  // start auto-confirm countdown when pending is set
+  useEffect(() => {
+    if (!pending) {
+      setAutoCountdown(0);
+      if (countdownRef.current) { clearInterval(countdownRef.current); countdownRef.current = null; }
+      return;
+    }
+
+    // start 3s countdown
+    let seconds = 3;
+    setAutoCountdown(seconds);
+    countdownRef.current = setInterval(() => {
+      seconds -= 1;
+      setAutoCountdown(seconds);
+      if (seconds <= 0) {
+        // auto send
+        (async () => {
+          const res = await sendCommandFromText(pending.text);
+          setLastResult(res);
+          setPending(null);
+        })();
+        clearInterval(countdownRef.current);
+        countdownRef.current = null;
+      }
+    }, 1000);
+
+    return () => { if (countdownRef.current) { clearInterval(countdownRef.current); countdownRef.current = null; } };
+  }, [pending]);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
