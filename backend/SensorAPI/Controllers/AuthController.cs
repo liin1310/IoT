@@ -48,17 +48,26 @@ namespace SensorApi.Controllers
         [HttpPost("save-fcm-token")]
         public IActionResult SaveFcmToken([FromBody] SaveFcmTokenRequest req)
         {
-            if (string.IsNullOrWhiteSpace(req.FcmToken))
-                return BadRequest(new { message = "FCM token is required" });
+            if (string.IsNullOrWhiteSpace(req.FcmToken)) return BadRequest();
 
-            var user = _db.Users.SingleOrDefault(u => u.Username == req.Username);
-            if (user == null)
-                return NotFound(new { message = "User not found" });
+            // Kiểm tra xem token này đã tồn tại cho user này chưa
+            var device = _db.UserDevices.FirstOrDefault(d => d.FcmToken == req.FcmToken && d.Username == req.Username);
 
-            user.FcmToken = req.FcmToken;
+            if (device == null)
+            {
+                _db.UserDevices.Add(new UserDevice
+                {
+                    Username = req.Username,
+                    FcmToken = req.FcmToken
+                });
+            }
+            else
+            {
+                device.LastUpdated = DateTime.UtcNow;
+            }
+
             _db.SaveChanges();
-
-            return Ok(new { message = "FCM token saved" });
+            return Ok(new { message = "Registered successfully" });
         }
 
     }

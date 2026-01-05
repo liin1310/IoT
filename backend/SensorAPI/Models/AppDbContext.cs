@@ -13,6 +13,7 @@ namespace SensorApi.Models
 
         public DbSet<Device> Devices { get; set; }
         public DbSet<SensorData> SensorDataEntries { get; set; }
+        public DbSet<UserDevice> UserDevices { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -25,6 +26,7 @@ namespace SensorApi.Models
             modelBuilder.Entity<Device>(entity =>
             {
                 entity.ToTable("devices_table"); 
+
             });
 
             modelBuilder.Entity<SensorData>(entity =>
@@ -38,6 +40,15 @@ namespace SensorApi.Models
                       .WithMany()
                       .HasForeignKey(e => e.DeviceId)
                       .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<UserDevice>(entity => {
+                entity.ToTable("user_devices_table");
+                entity.Property(e => e.Id).HasColumnName("id");
+                entity.Property(e => e.Username).HasColumnName("username");
+                entity.Property(e => e.FcmToken).HasColumnName("fcm_token");
+                entity.Property(e => e.LastUpdated).HasColumnName("last_updated");
+
             });
         }
     }

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SensorApi.Models;
@@ -11,9 +12,11 @@ using SensorApi.Models;
 namespace SensorApi.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260105164428_AddUserDevices")]
+    partial class AddUserDevices
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -72,7 +75,7 @@ namespace SensorApi.Migrations
 
                     b.HasIndex("DeviceId");
 
-                    b.ToTable("sensor_data_table", (string)null);
+                    b.ToTable("user_devices_table", (string)null);
                 });
 
             modelBuilder.Entity("SensorApi.Models.User", b =>
@@ -107,28 +110,24 @@ namespace SensorApi.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
+                        .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("FcmToken")
                         .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("fcm_token");
+                        .HasColumnType("text");
 
                     b.Property<DateTime>("LastUpdated")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("last_updated");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Username")
                         .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("username");
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
-                    b.ToTable("user_devices_table", (string)null);
+                    b.ToTable("UserDevices");
                 });
 
             modelBuilder.Entity("SensorApi.Models.SensorData", b =>
