@@ -182,7 +182,7 @@ function SimpleLine({points, width=520, height=140, color='#0a84ff', maxPoints=1
         const y = (plotHeight - ((v - min)/(max-min||1))*(plotHeight-12)) + 6;
         return (
           <circle key={i} cx={x} cy={y} r={2} fill={color} opacity={0.95}
-            onMouseEnter={() => { setHover({ x, y, v: p.v, t: p.t }); if (onPointHover) onPointHover({ value: p.v, time: p.t }); }}
+            onMouseEnter={() => { setHover({ x, y, v: p.v, t: p.t, i }); if (onPointHover) onPointHover({ value: p.v, time: p.t }); }}
             onMouseLeave={() => { setHover(null); if (onPointHover) onPointHover(null); }} />
         );
       })}
@@ -219,13 +219,36 @@ function SimpleLine({points, width=520, height=140, color='#0a84ff', maxPoints=1
       })()}
 
       {/* tooltip */}
-      {hover && (
-        <g>
-          <rect x={Math.max(4, hover.x - 40)} y={Math.max(4, hover.y - 36)} width={84} height={30} rx={6} fill="#071726" stroke="rgba(255,255,255,0.06)" />
-          <text x={hover.x} y={hover.y - 18} fill="#fff" fontSize={12} textAnchor="middle">{hover.v}</text>
-          <text x={hover.x} y={hover.y - 6} fill="#9fb4d1" fontSize={10} textAnchor="middle">{formatTime(hover.t)}</text>
-        </g>
-      )}
+      {hover && (()=>{
+        const idx = hover.i;
+        let deltaLine = '';
+        let rateLine = '';
+        if (typeof idx === 'number'){
+          const nowPoint = { v: smoothVals[idx], t: sampled[idx].t };
+          if (showDeltaMinutes > 0){
+            const cutoff = nowPoint.t - showDeltaMinutes*60*1000;
+            // find previous sampled point before cutoff
+            let prev = null;
+            for (let k=idx;k>=0;k--){ if (sampled[k].t <= cutoff) { prev = { v: smoothVals[k], t: sampled[k].t }; break; } }
+            if (!prev){ for (let k=idx-1;k>=0;k--){ prev = { v: smoothVals[k], t: sampled[k].t }; break; } }
+            if (prev){
+              const d = Math.round((nowPoint.v - prev.v)*10)/10;
+              deltaLine = (d>=0? '+'+d : d) + ' ppm';
+              const mins = (nowPoint.t - prev.t)/60000;
+              const rate = Math.round((d / Math.max(0.001, mins))*10)/10;
+              rateLine = rate + ' ppm/min';
+            }
+          }
+        }
+        return (
+          <g>
+            <rect x={Math.max(4, hover.x - 64)} y={Math.max(4, hover.y - 54)} width={140} height={46} rx={6} fill="#071726" stroke="rgba(255,255,255,0.06)" />
+            <text x={hover.x-4} y={hover.y - 36} fill="#fff" fontSize={12} textAnchor="start">{hover.v} ppm</text>
+            <text x={hover.x-4} y={hover.y - 20} fill="#9fb4d1" fontSize={10} textAnchor="start">{formatTime(hover.t)}</text>
+            {deltaLine && <text x={hover.x-4} y={hover.y - 6} fill="#9fb4d1" fontSize={10} textAnchor="start">Δ {deltaLine} · {rateLine}</text>}
+          </g>
+        );
+      })()}
     </svg>
   );
 }
