@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using SensorApi.Models; 
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
+
 
 namespace SensorApi.Controllers
 {
@@ -42,6 +44,32 @@ namespace SensorApi.Controllers
 
             return Ok(new { token = "dummy-jwt", username = user.Username });
         }
+
+        [HttpPost("save-fcm-token")]
+        public IActionResult SaveFcmToken([FromBody] SaveFcmTokenRequest req)
+        {
+            if (string.IsNullOrWhiteSpace(req.FcmToken)) return BadRequest();
+
+            // Kiểm tra xem token này đã tồn tại cho user này chưa
+            var device = _db.UserDevices.FirstOrDefault(d => d.FcmToken == req.FcmToken && d.Username == req.Username);
+
+            if (device == null)
+            {
+                _db.UserDevices.Add(new UserDevice
+                {
+                    Username = req.Username,
+                    FcmToken = req.FcmToken
+                });
+            }
+            else
+            {
+                device.LastUpdated = DateTime.UtcNow;
+            }
+
+            _db.SaveChanges();
+            return Ok(new { message = "Registered successfully" });
+        }
+
     }
 
     public class LoginRequest
@@ -56,4 +84,11 @@ namespace SensorApi.Controllers
         public string Password { get; set; } = "";
         public string Email { get; set; } = "";
     }
+
+    public class SaveFcmTokenRequest
+    {
+        public string Username { get; set; } = "";
+        public string FcmToken { get; set; } = "";
+    }
+
 }

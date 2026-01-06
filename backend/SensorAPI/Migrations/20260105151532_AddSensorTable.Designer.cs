@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SensorApi.Models;
@@ -11,9 +12,11 @@ using SensorApi.Models;
 namespace SensorApi.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260105151532_AddSensorTable")]
+    partial class AddSensorTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -83,6 +86,9 @@ namespace SensorApi.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("FcmToken")
+                        .HasColumnType("text");
+
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasColumnType("text");
@@ -101,34 +107,6 @@ namespace SensorApi.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("users_table", (string)null);
-                });
-
-            modelBuilder.Entity("SensorApi.Models.UserDevice", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("FcmToken")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("fcm_token");
-
-                    b.Property<DateTime>("LastUpdated")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("last_updated");
-
-                    b.Property<string>("Username")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("username");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("user_devices_table", (string)null);
                 });
 
             modelBuilder.Entity("SensorApi.Models.SensorData", b =>
