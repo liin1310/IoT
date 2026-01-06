@@ -29,10 +29,20 @@ export default function GasChart({ points = [] }) {
       prevDangerRef.current = true;
       const ev = { time: Date.now(), level: status, value: latest };
       setAlertHistory(h => { const next = [...h, ev].slice(-200); try{ localStorage.setItem('sensors:gasAlerts', JSON.stringify(next)); }catch(e){}; return next; });
-      setFlash(true); setTimeout(()=>setFlash(false), 3500);
     }
-    if (status !== 'DANGER') prevDangerRef.current = false;
+    if (status !== 'DANGER') {
+      prevDangerRef.current = false;
+    }
   }, [status, muted, latest]);
+
+  // Flash liên tục khi ở trạng thái DANGER
+  useEffect(() => {
+    if (status === 'DANGER') {
+      setFlash(true);
+    } else {
+      setFlash(false);
+    }
+  }, [status]);
 
   useEffect(()=>{ try{ localStorage.setItem('gas:muted', muted? '1':'0') }catch(e){} }, [muted]);
 

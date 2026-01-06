@@ -3,13 +3,15 @@ import { startPolling, stopPolling, onSensorData } from '../ws';
 import { HOST } from '../api';
 import SensorChart from '../components/SensorChart';
 import GasChart from '../components/GasChart';
-import BarChart from '../components/BarChart';
 import QuickControls from '../components/QuickControls';
 import AlertCard from '../components/AlertCard';
 import StatCard from '../components/StatCard';
 import BottomNav from '../components/BottomNav';
+import { useRef } from 'react';
+
 
 export default function Sensors(){
+  const fireLockRef = useRef(false);
   const MAX_HISTORY = 1000;
   const loadHistory = (key) => {
     try {
@@ -99,36 +101,55 @@ export default function Sensors(){
 
   // 2. THÊM MỚI: Logic Polling API Check Fire liên tục
   useEffect(() => {
+    let lastRequestId = 0;
+  
     const checkFireStatus = async () => {
+      const requestId = ++lastRequestId;
+  
       try {
-        const response = await fetch(`${HOST}/api/SensorData/check-fire`);
-        if (response.ok) {
-          const data = await response.json();
-          // Theo ảnh Postman: data trả về là { "isFire": false/true }
-          const isFireDetected = data.isFire;
-
-          setFire(isFireDetected);
-
-          if (isFireDetected) {
-            console.warn("CẢNH BÁO CHÁY TỪ API!");
-            // Tự động bật quạt (Logic cũ của bạn)
-            setControls(cs => cs.map(c => c.id === 'vent' ? {...c, state: 'ON'} : c));
+        const res = await fetch(`${HOST}/api/SensorData/check-fire`);
+        const data = await res.json();
+  
+        if (requestId !== lastRequestId) return;
+  
+        // NẾU người dùng đã nhấn nút Tắt (fireLockRef = true)
+        // THÌ chúng ta bỏ qua việc setFire(true) cho đến khi Backend thực sự báo hết cháy
+        if (data.isFire) {
+          if (fireLockRef.current === false) {
+            setFire(true);
           }
+        } else {
+          // Chỉ khi Backend báo hết cháy thực sự, ta mới mở khóa để nhận cảnh báo mới cho lần sau
+          fireLockRef.current = false;
+          setFire(false);
         }
-      } catch (error) {
-        console.error("Lỗi khi check fire:", error);
+      } catch (e) {
+        console.error('check fire error', e);
       }
     };
-
-    // Gọi ngay lập tức lần đầu
-    checkFireStatus();
-
-    // Thiết lập gọi lại mỗi 2 giây (2000ms)
-    const intervalId = setInterval(checkFireStatus, 2000);
-
-    // Dọn dẹp khi component unmount
-    return () => clearInterval(intervalId);
+  
+    const id = setInterval(checkFireStatus, 2000);
+    return () => clearInterval(id);
   }, []);
+  
+  async function handleStopAlarm() {
+    // 1. Khóa lại ngay lập tức: "Tôi đã tắt rồi, đừng nghe lời Backend báo cháy nữa"
+    fireLockRef.current = true; 
+    // 2. Ẩn UI ngay lập tức
+    setFire(false);
+  
+    try {
+      await fetch(`${HOST}/api/device/alarm/stop`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      // Không setFire(false) ở finally nữa vì đã set ở trên để tránh giật lag UI
+    } catch (err) {
+      console.error('Lỗi stop alarm:', err);
+      // Nếu lỗi, có thể mở khóa lại để cảnh báo tiếp
+      fireLockRef.current = false;
+    }
+  }
 
   function handleToggle(control){
     setControls(cs => cs.map(c=> c.id===control.id ? {...c, state: c.state==='ON'?'OFF':'ON'} : c));
@@ -146,9 +167,7 @@ export default function Sensors(){
       <div style={{marginTop:8}}>
         <AlertCard 
             visible={fire} 
-            title="CẢNH BÁO CHÁY!"
-            description="Phát hiện hỏa hoạn. Hệ thống phun nước đã kích hoạt."
-            onAction={()=>alert('Đã gửi tín hiệu khẩn cấp!')} 
+            onAction={handleStopAlarm} 
         />
       </div>
 
