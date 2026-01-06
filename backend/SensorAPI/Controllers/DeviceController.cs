@@ -47,8 +47,10 @@
 // }
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 using SensorApi.Services;
 using SensorApi.Realtime;
+using SensorApi.Models;
 
 namespace SensorApi.Controllers
 {
@@ -57,14 +59,17 @@ namespace SensorApi.Controllers
     public class DeviceController : ControllerBase
     {
         private readonly MqttPublisher _mqtt;
-        private readonly IHubContext<SensorHub> _hubContext; // Thêm SignalR
+        private readonly IHubContext<SensorHub> _hubContext; 
+        private readonly AppDbContext _context;
 
-        public DeviceController(MqttPublisher mqtt, IHubContext<SensorHub> hubContext)
+        public DeviceController(MqttPublisher mqtt, IHubContext<SensorHub> hubContext, AppDbContext context)
         {
             _mqtt = mqtt;
             _hubContext = hubContext;
+            _context = context;
         }
 
+        //API để điều khiển đèn
         [HttpPost("light")]
         public async Task<IActionResult> ControlLight([FromBody] DeviceCommand body)
         {
@@ -76,6 +81,8 @@ namespace SensorApi.Controllers
             return Ok(new { message = "Light command sent" });
         }
 
+
+        //API để điều khiển quạt
         [HttpPost("fan")]
         public async Task<IActionResult> ControlFan([FromBody] DeviceCommand body)
         {
@@ -86,6 +93,7 @@ namespace SensorApi.Controllers
             return Ok(new { message = "Fan command sent" });
         }
 
+        //API để điều khiển cửa
         [HttpPost("door")]
         public async Task<IActionResult> ControlDoor([FromBody] DeviceCommand body)
         {
@@ -96,6 +104,7 @@ namespace SensorApi.Controllers
             return Ok(new { message = "Door command sent" });
         }
 
+        //API để tắt chuông báo động
         [HttpPost("alarm/stop")]
         public async Task<IActionResult> StopAlarm()
         {
@@ -106,7 +115,7 @@ namespace SensorApi.Controllers
             return Ok(new { message = "Alarm stop command sent" });
         }
 
-
+        //API để lấy trạng thái hiện tại của các thiết bị
         [HttpGet("status")]
         public async Task<IActionResult> GetStatus()
         {
