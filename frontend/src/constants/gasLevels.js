@@ -1,6 +1,6 @@
 // src/constants/gasLevels.js
 export const GAS_LEVELS = {
-  SAFE: 200,     
-  WARNING: 400,   
-  DANGER: 600     
+  SAFE: 1000,     
+  WARNING: 2000,   
+  DANGER: 2000     
 };

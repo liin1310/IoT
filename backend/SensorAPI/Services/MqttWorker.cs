@@ -206,7 +206,11 @@ namespace SensorApi.Services
                 var message = new MulticastMessage()
                 {
                     Tokens = tokens,
-                    Notification = new Notification() { Title = title, Body = body }
+                    Notification = new Notification() { Title = title, Body = body },
+                    Data = new Dictionary<string, string>() {
+                        { "type", "ALARM" },
+                        { "click_action", "FLUTTER_NOTIFICATION_CLICK" }
+                    }
                 };
 
                 await FirebaseMessaging.DefaultInstance.SendEachForMulticastAsync(message);
