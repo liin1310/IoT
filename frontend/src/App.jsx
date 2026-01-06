@@ -11,6 +11,7 @@ import {
   onForegroundMessage,
   requestNotificationPermission 
 } from './services/fcmService';
+import './utils/fcmDebug'; // Import để load debug function vào window
 
 function App() {
   const isAuth = !!localStorage.getItem('token');

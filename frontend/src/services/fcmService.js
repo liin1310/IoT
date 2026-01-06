@@ -54,7 +54,8 @@ export async function registerFCMToken() {
     });
 
     if (fcmToken) {
-      console.log('FCM Token:', fcmToken);
+      console.log('✅ FCM Token đã lấy được:', fcmToken);
+      console.log('📋 Token (copy để test):', fcmToken);
       // Lưu token vào localStorage để dùng sau
       localStorage.setItem('fcmToken', fcmToken);
       
@@ -63,7 +64,7 @@ export async function registerFCMToken() {
       
       return fcmToken;
     } else {
-      console.warn('Không thể lấy FCM Token. Có thể người dùng chưa cấp quyền.');
+      console.warn('❌ Không thể lấy FCM Token. Có thể người dùng chưa cấp quyền.');
       return null;
     }
   } catch (error) {
@@ -96,9 +97,10 @@ async function saveTokenToBackend(token) {
 
     if (response.ok) {
       const data = await response.json();
-      console.log('Đã lưu FCM Token vào Backend:', data);
+      console.log('✅ Đã lưu FCM Token vào Backend thành công:', data);
     } else {
-      console.error('Lỗi lưu FCM Token vào Backend:', await response.text());
+      const errorText = await response.text();
+      console.error('❌ Lỗi lưu FCM Token vào Backend:', response.status, errorText);
     }
   } catch (error) {
     console.error('Lỗi gọi API save-fcm-token:', error);

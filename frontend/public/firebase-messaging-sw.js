@@ -16,10 +16,16 @@ const firebaseConfig = {
 };
 
 // Khởi tạo Firebase
-firebase.initializeApp(firebaseConfig);
+try {
+  firebase.initializeApp(firebaseConfig);
+  console.log('[firebase-messaging-sw.js] Firebase đã được khởi tạo');
+} catch (error) {
+  console.error('[firebase-messaging-sw.js] Lỗi khởi tạo Firebase:', error);
+}
 
 // Lấy instance của messaging
 const messaging = firebase.messaging();
+console.log('[firebase-messaging-sw.js] Messaging instance đã sẵn sàng');
 
 // Xử lý thông báo khi app ở background (tab đóng)
 messaging.onBackgroundMessage((payload) => {
