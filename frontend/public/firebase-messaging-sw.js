@@ -30,7 +30,8 @@ messaging.onBackgroundMessage((payload) => {
     body: payload.notification?.body || '',
     icon: '/vite.svg', // Icon của bạn
     badge: '/vite.svg',
-    data: payload.data || {}
+    data: payload.data || {},
+    vibrate: [200, 100, 200, 100, 200, 100, 200] // Rung khi có ALARM
   };
 
   // Kiểm tra nếu là ALARM thì thêm âm thanh và priority cao
@@ -38,8 +39,11 @@ messaging.onBackgroundMessage((payload) => {
     notificationOptions.requireInteraction = true; // Bắt buộc người dùng tương tác
     notificationOptions.silent = false; // Phát âm thanh
     notificationOptions.tag = 'alarm'; // Tag để nhóm thông báo
+    notificationOptions.priority = 'high'; // Độ ưu tiên cao
+    notificationOptions.renotify = true; // Cho phép thông báo lại
   }
 
+  console.log('[firebase-messaging-sw.js] Showing notification:', notificationTitle);
   return self.registration.showNotification(notificationTitle, notificationOptions);
 });
 

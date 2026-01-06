@@ -66,11 +66,25 @@ namespace SensorApi.Controllers
                                )
                 );
 
-            // Gửi FCM notification khi phát hiện cháy (chỉ gửi 1 lần khi chuyển từ false -> true, và không spam quá nhiều)
-            if (isFire && !_lastFireState)
+            // Gửi FCM notification khi phát hiện cháy
+            // - Gửi ngay khi chuyển từ false -> true (lần đầu)
+            // - Gửi định kỳ mỗi 30 giây khi vẫn còn cháy (để đảm bảo user đóng tab vẫn nhận được)
+            if (isFire)
             {
-                // Chỉ gửi nếu chưa gửi trong 30 giây gần đây (tránh spam)
-                if ((DateTime.UtcNow - _lastFireNotificationTime).TotalSeconds > 30)
+                bool shouldSend = false;
+                
+                // Trường hợp 1: Chuyển từ false -> true (lần đầu phát hiện)
+                if (!_lastFireState)
+                {
+                    shouldSend = true;
+                }
+                // Trường hợp 2: Vẫn còn cháy và đã qua 30 giây kể từ lần gửi cuối
+                else if ((DateTime.UtcNow - _lastFireNotificationTime).TotalSeconds > 30)
+                {
+                    shouldSend = true;
+                }
+
+                if (shouldSend)
                 {
                     string alertMessage = "Phát hiện hỏa hoạn hoặc nồng độ khí gas nguy hiểm! Kiểm tra ngay lập tức!";
                     await SendPushToAllHomeDevices("🚨 BÁO ĐỘNG KHẨN CẤP", alertMessage);
