@@ -105,6 +105,23 @@ namespace SensorApi.Controllers
             
             return Ok(new { message = "Alarm stop command sent" });
         }
+
+
+        [HttpGet("status")]
+        public async Task<IActionResult> GetStatus()
+        {
+            // Tìm các trạng thái mới nhất của Light, Fan, Door, Fire
+            var statusTypes = new[] { "LightStatus", "FanStatus", "DoorStatus", "FireStatus" };
+
+            var latestStatuses = await _context.SensorDataEntries
+                .Where(s => statusTypes.Contains(s.type))
+                .GroupBy(s => s.type)
+                .Select(g => g.OrderByDescending(x => x.received_at).FirstOrDefault())
+                .ToListAsync();
+
+            // Trả về danh sách trạng thái để Frontend hiển thị nút gạt cho đúng
+            return Ok(latestStatuses);
+        }
     }
 
     public class DeviceCommand { public string State { get; set; } = ""; }
