@@ -108,6 +108,11 @@ export default function Sensors(){
   
       try {
         const res = await fetch(`${HOST}/api/SensorData/check-fire`);
+        if (!res.ok) {
+          console.error('check-fire API error:', res.status);
+          return;
+        }
+        
         const data = await res.json();
   
         if (requestId !== lastRequestId) return;
@@ -117,9 +122,13 @@ export default function Sensors(){
         if (data.isFire) {
           if (fireLockRef.current === false) {
             setFire(true);
+            console.log(' Phát hiện cháy - AlertCard sẽ hiển thị');
           }
         } else {
           // Chỉ khi Backend báo hết cháy thực sự, ta mới mở khóa để nhận cảnh báo mới cho lần sau
+          if (fireLockRef.current) {
+            console.log(' Hết cháy - Mở khóa để nhận cảnh báo mới');
+          }
           fireLockRef.current = false;
           setFire(false);
         }
@@ -128,6 +137,9 @@ export default function Sensors(){
       }
     };
   
+    // Gọi ngay lần đầu
+    checkFireStatus();
+    
     const id = setInterval(checkFireStatus, 2000);
     return () => clearInterval(id);
   }, []);

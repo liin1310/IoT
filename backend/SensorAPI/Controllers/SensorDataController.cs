@@ -50,6 +50,9 @@ namespace SensorApi.Controllers
             return Ok(data);
         }
 
+        private static bool _lastFireState = false;
+        private static DateTime _lastFireNotificationTime = DateTime.MinValue;
+
         [HttpGet("check-fire")]
         public async Task<IActionResult> CheckFire()
         {
@@ -62,6 +65,20 @@ namespace SensorApi.Controllers
                                 (s.type == "Gas" && s.value >= 2000.0)
                                )
                 );
+
+            // Gửi FCM notification khi phát hiện cháy (chỉ gửi 1 lần khi chuyển từ false -> true, và không spam quá nhiều)
+            if (isFire && !_lastFireState)
+            {
+                // Chỉ gửi nếu chưa gửi trong 30 giây gần đây (tránh spam)
+                if ((DateTime.UtcNow - _lastFireNotificationTime).TotalSeconds > 30)
+                {
+                    string alertMessage = "Phát hiện hỏa hoạn hoặc nồng độ khí gas nguy hiểm! Kiểm tra ngay lập tức!";
+                    await SendPushToAllHomeDevices("🚨 BÁO ĐỘNG KHẨN CẤP", alertMessage);
+                    _lastFireNotificationTime = DateTime.UtcNow;
+                }
+            }
+
+            _lastFireState = isFire;
 
             return Ok(new { isFire = isFire });
         }
