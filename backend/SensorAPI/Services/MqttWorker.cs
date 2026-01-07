@@ -25,13 +25,13 @@ namespace SensorApi.Services
             IServiceScopeFactory scopeFactory,
             ILogger<MqttWorker> logger,
             IHubContext<SensorHub> hubContext)
-        {//
+        {
             _cfg = cfg;
             _scopeFactory = scopeFactory;
             _logger = logger;
             _hubContext = hubContext;
 
-            //Khởi tạo Firebase nếu chưa có
+            // Khởi tạo Firebase nếu chưa có
             if (FirebaseApp.DefaultInstance == null)
             {
                 FirebaseApp.Create(new AppOptions()
@@ -44,7 +44,6 @@ namespace SensorApi.Services
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             var mqttFactory = new MqttFactory();
-
             var mqttClient = mqttFactory.CreateMqttClient();
 
             var options = new MqttClientOptionsBuilder()
@@ -56,7 +55,6 @@ namespace SensorApi.Services
                 .WithTlsOptions(o =>
                 {
                     o.UseTls();
-                    // Cho phép TLS không kiểm tra cert 
                     o.WithCertificateValidationHandler(_ => true);
                 })
                 .Build();
@@ -76,7 +74,6 @@ namespace SensorApi.Services
                 }
             };
 
-            // Vòng đời BackgroundService
             while (!stoppingToken.IsCancellationRequested)
             {
                 try
@@ -85,10 +82,11 @@ namespace SensorApi.Services
                     {
                         await mqttClient.ConnectAsync(options, stoppingToken);
 
+                        // Đăng ký nhận toàn bộ dữ liệu cảm biến và trạng thái thiết bị
                         await mqttClient.SubscribeAsync("home/data/#");
-                        await mqttClient.SubscribeAsync("home/status/fire");
+                        await mqttClient.SubscribeAsync("home/status/#");
 
-                        _logger.LogInformation(">>> [MQTT Worker] Connected & Listening for Hardware data...");
+                        _logger.LogInformation(">>> [MQTT Worker] Đã kết nối và đang lắng nghe toàn bộ dữ liệu...");
                     }
                 }
                 catch (Exception ex)
@@ -105,7 +103,7 @@ namespace SensorApi.Services
             using var scope = _scopeFactory.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-            // Lấy thiết bị đầu tiên (ESP32 mặc định)
+            // Lấy thiết bị mặc định
             var device = await context.Devices.OrderBy(d => d.id).FirstOrDefaultAsync();
             if (device == null)
             {
@@ -113,16 +111,28 @@ namespace SensorApi.Services
                 return;
             }
 
-            string type;
-            double value;
+            string type = "Unknown";
+            double value = 0;
 
-            if (topic == "home/status/fire")
+            // 1. Phân loại Topic và xử lý Payload
+            if (topic.StartsWith("home/status/"))
             {
-                type = "FireStatus";
-                value = payload == "WARNING" ? 1.0 : 0.0;
+                // Xử lý các topic trạng thái (Nút bấm vật lý hoặc Báo cáo khởi động)
+                type = topic switch
+                {
+                    "home/status/fire" => "FireStatus",
+                    "home/status/light" => "LightStatus",
+                    "home/status/door" => "DoorStatus",
+                    "home/status/fan" => "FanStatus",
+                    _ => "UnknownStatus"
+                };
+
+                // Chuyển ON/WARNING -> 1.0, OFF/SAFE -> 0.0 để lưu DB
+                value = (payload == "ON" || payload == "WARNING") ? 1.0 : 0.0;
             }
-            else
+            else if (topic.StartsWith("home/data/"))
             {
+                // Xử lý dữ liệu cảm biến (Nhiệt độ, Độ ẩm, Gas)
                 type = topic switch
                 {
                     "home/data/temp" => "Temperature",
@@ -131,11 +141,11 @@ namespace SensorApi.Services
                     _ => "Unknown"
                 };
 
-                if (!double.TryParse(payload, out value))
-                    return;
+                if (!double.TryParse(payload, out value)) return;
             }
 
-            var data = new SensorData
+            // 2. Lưu lịch sử vào Database
+            var dataEntry = new SensorData
             {
                 DeviceId = device.id,
                 type = type,
@@ -143,35 +153,46 @@ namespace SensorApi.Services
                 received_at = DateTimeOffset.UtcNow
             };
 
-            //Lưu lịch sử vào DB
-            context.SensorDataEntries.Add(data);
+            context.SensorDataEntries.Add(dataEntry);
             await context.SaveChangesAsync();
 
-            _logger.LogInformation($"[smarthome-db] Saved {type}: {value}");
+            _logger.LogInformation($"[smarthome-db] Saved {type}: {value} (Payload: {payload})");
 
-            //Push realtime lên Web (SignalR)
+            // 3. Push Realtime lên Web qua SignalR
+
+            // A. Gửi dữ liệu số (cho biểu đồ và hiển thị giá trị)
             await _hubContext.Clients.All.SendAsync(
                 "ReceiveSensorData",
                 new
                 {
-                    type = data.type,
-                    value = data.value,
-                    time = data.received_at
+                    type = dataEntry.type,
+                    value = dataEntry.value,
+                    time = dataEntry.received_at
                 }
             );
 
-            //Gửi thông báo đẩy qua Firebase khi có cảnh báo
+            // B. Gửi trạng thái thiết bị (để Frontend đổi màu icon/nút gạt ngay lập tức)
+            if (topic.StartsWith("home/status/"))
+            {
+                string deviceName = topic.Replace("home/status/", "");
+                await _hubContext.Clients.All.SendAsync("DeviceStatusChanged", new
+                {
+                    device = deviceName,
+                    state = payload
+                });
+            }
+
+            // 4. Gửi thông báo Firebase khi có nguy hiểm
             if (type == "FireStatus" && value == 1.0)
             {
-                await SendFirebaseNotification("🚨 CẢNH BÁO CHÁY!", "Phát hiện hỏa hoạn! Kiểm tra ngay lập tức!");
+                await SendFirebaseNotification("CẢNH BÁO CHÁY!", "Phát hiện hỏa hoạn! Kiểm tra ngay lập tức!");
             }
             else if (type == "Gas" && value >= 2000.0)
             {
-                await SendFirebaseNotification("⚠️ RÒ RỈ GAS!", $"Nồng độ Gas nguy hiểm đo được: {value}");
+                await SendFirebaseNotification("RÒ RỈ GAS!", $"Nồng độ Gas nguy hiểm: {value}");
             }
         }
 
-        //ham gửi thông báo đẩy Firebase
         private async Task SendFirebaseNotification(string title, string body)
         {
             try
@@ -198,13 +219,12 @@ namespace SensorApi.Services
                 };
 
                 await FirebaseMessaging.DefaultInstance.SendEachForMulticastAsync(message);
-                _logger.LogInformation(">>> Đã đẩy thông báo tới toàn bộ thiết bị trong nhà.");
+                _logger.LogInformation(">>> Đã đẩy thông báo tới toàn bộ thiết bị.");
             }
             catch (Exception ex)
             {
                 _logger.LogError($">>> Lỗi gửi Firebase: {ex.Message}");
             }
         }
-
     }
 }
