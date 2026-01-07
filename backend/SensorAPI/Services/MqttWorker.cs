@@ -179,8 +179,11 @@ namespace SensorApi.Services
                 using var scope = _scopeFactory.CreateScope();
                 var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-                // Lấy tất cả token trong nhà
-                var tokens = await context.UserDevices.Select(d => d.FcmToken).ToListAsync();
+                // Lấy tất cả token trong nhà (filter null/empty)
+                var tokens = await context.UserDevices
+                    .Where(d => !string.IsNullOrEmpty(d.FcmToken))
+                    .Select(d => d.FcmToken)
+                    .ToListAsync();
 
                 if (tokens.Count == 0) return;
 
