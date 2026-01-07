@@ -14,6 +14,7 @@ namespace SensorApi.Models
         public DbSet<Device> Devices { get; set; }
         public DbSet<SensorData> SensorDataEntries { get; set; }
         public DbSet<UserDevice> UserDevices { get; set; }
+        public DbSet<FireNotificationState> FireNotificationStates { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -42,6 +43,15 @@ namespace SensorApi.Models
                 entity.Property(e => e.FcmToken).HasColumnName("fcm_token");
                 entity.Property(e => e.LastUpdated).HasColumnName("last_updated");
 
+            });
+
+            modelBuilder.Entity<FireNotificationState>(entity => {
+                entity.ToTable("fire_notification_state");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Id).HasColumnName("id");
+                entity.Property(e => e.LastFireState).HasColumnName("last_fire_state");
+                entity.Property(e => e.LastFireNotificationTime).HasColumnName("last_fire_notification_time");
+                entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
             });
         }
     }

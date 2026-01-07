@@ -9,7 +9,8 @@ import {
   initializeFCM, 
   registerFCMToken, 
   onForegroundMessage,
-  requestNotificationPermission 
+  requestNotificationPermission,
+  retryPendingTokens
 } from './services/fcmService';
 import './utils/fcmDebug'; // Import để load debug function vào window
 
@@ -46,6 +47,9 @@ function App() {
         }
 
         console.log('FCM đã sẵn sàng, token:', token);
+
+        // Retry pending tokens nếu có
+        retryPendingTokens();
 
         // Lắng nghe thông báo khi app đang mở (sau khi token đã đăng ký)
         unsubscribe = onForegroundMessage((payload) => {

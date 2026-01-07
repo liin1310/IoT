@@ -72,9 +72,6 @@ namespace SensorApi.Controllers
             return Ok(data);
         }
 
-        private static bool _lastFireState = false;
-        private static DateTime _lastFireNotificationTime = DateTime.MinValue;
-
         [HttpGet("check-fire")]
         public async Task<IActionResult> CheckFire()
         {
@@ -90,6 +87,15 @@ namespace SensorApi.Controllers
                                    )
                     );
 
+                // Lấy hoặc tạo state từ database (thay vì static variables)
+                var state = await _context.FireNotificationStates.FindAsync(1);
+                if (state == null)
+                {
+                    state = new FireNotificationState { Id = 1 };
+                    _context.FireNotificationStates.Add(state);
+                    await _context.SaveChangesAsync();
+                }
+
                 // Gửi FCM notification khi phát hiện cháy
                 // - Gửi ngay khi chuyển từ false -> true (lần đầu)
                 // - Gửi định kỳ mỗi 30 giây khi vẫn còn cháy (để đảm bảo user đóng tab vẫn nhận được)
@@ -98,12 +104,12 @@ namespace SensorApi.Controllers
                     bool shouldSend = false;
                     
                     // Trường hợp 1: Chuyển từ false -> true (lần đầu phát hiện)
-                    if (!_lastFireState)
+                    if (!state.LastFireState)
                     {
                         shouldSend = true;
                     }
                     // Trường hợp 2: Vẫn còn cháy và đã qua 30 giây kể từ lần gửi cuối
-                    else if ((DateTime.UtcNow - _lastFireNotificationTime).TotalSeconds > 30)
+                    else if ((DateTime.UtcNow - state.LastFireNotificationTime).TotalSeconds > 30)
                     {
                         shouldSend = true;
                     }
@@ -113,11 +119,17 @@ namespace SensorApi.Controllers
                         string alertMessage = "Phát hiện hỏa hoạn hoặc nồng độ khí gas nguy hiểm! Kiểm tra ngay lập tức!";
                         // Gửi FCM trong background, không block response
                         _ = Task.Run(async () => await SendPushToAllHomeDevices("🚨 BÁO ĐỘNG KHẨN CẤP", alertMessage));
-                        _lastFireNotificationTime = DateTime.UtcNow;
+                        
+                        // Cập nhật state vào database
+                        state.LastFireNotificationTime = DateTime.UtcNow;
+                        state.UpdatedAt = DateTime.UtcNow;
                     }
                 }
 
-                _lastFireState = isFire;
+                // Cập nhật trạng thái cháy vào database
+                state.LastFireState = isFire;
+                state.UpdatedAt = DateTime.UtcNow;
+                await _context.SaveChangesAsync();
 
                 return Ok(new { isFire = isFire });
             }

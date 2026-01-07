@@ -73,12 +73,21 @@ export async function registerFCMToken() {
   }
 }
 
-// Lưu FCM Token vào Backend
-async function saveTokenToBackend(token) {
+// Lưu FCM Token vào Backend với retry logic
+async function saveTokenToBackend(token, retryCount = 0) {
+  const MAX_RETRIES = 3;
+  const RETRY_DELAY = 2000; // 2 giây
+
   const username = localStorage.getItem('username');
   
   if (!username) {
     console.warn('Chưa đăng nhập, không thể lưu FCM token');
+    // Lưu vào queue để retry sau
+    const pendingTokens = JSON.parse(localStorage.getItem('pendingFcmTokens') || '[]');
+    if (!pendingTokens.includes(token)) {
+      pendingTokens.push(token);
+      localStorage.setItem('pendingFcmTokens', JSON.stringify(pendingTokens));
+    }
     return;
   }
 
@@ -98,12 +107,60 @@ async function saveTokenToBackend(token) {
     if (response.ok) {
       const data = await response.json();
       console.log('✅ Đã lưu FCM Token vào Backend thành công:', data);
+      
+      // Xóa token khỏi pending queue nếu có
+      const pendingTokens = JSON.parse(localStorage.getItem('pendingFcmTokens') || '[]');
+      const filtered = pendingTokens.filter(t => t !== token);
+      localStorage.setItem('pendingFcmTokens', JSON.stringify(filtered));
     } else {
       const errorText = await response.text();
       console.error('❌ Lỗi lưu FCM Token vào Backend:', response.status, errorText);
+      
+      // Retry nếu chưa vượt quá số lần thử
+      if (retryCount < MAX_RETRIES) {
+        console.log(`🔄 Retry lưu FCM token (${retryCount + 1}/${MAX_RETRIES}) sau ${RETRY_DELAY}ms...`);
+        setTimeout(() => {
+          saveTokenToBackend(token, retryCount + 1);
+        }, RETRY_DELAY);
+      } else {
+        // Lưu vào queue để retry sau khi user login lại
+        const pendingTokens = JSON.parse(localStorage.getItem('pendingFcmTokens') || '[]');
+        if (!pendingTokens.includes(token)) {
+          pendingTokens.push(token);
+          localStorage.setItem('pendingFcmTokens', JSON.stringify(pendingTokens));
+          console.warn('⚠️ Đã lưu token vào queue để retry sau');
+        }
+      }
     }
   } catch (error) {
     console.error('Lỗi gọi API save-fcm-token:', error);
+    
+    // Retry nếu chưa vượt quá số lần thử
+    if (retryCount < MAX_RETRIES) {
+      console.log(`🔄 Retry lưu FCM token (${retryCount + 1}/${MAX_RETRIES}) sau ${RETRY_DELAY}ms...`);
+      setTimeout(() => {
+        saveTokenToBackend(token, retryCount + 1);
+      }, RETRY_DELAY);
+    } else {
+      // Lưu vào queue
+      const pendingTokens = JSON.parse(localStorage.getItem('pendingFcmTokens') || '[]');
+      if (!pendingTokens.includes(token)) {
+        pendingTokens.push(token);
+        localStorage.setItem('pendingFcmTokens', JSON.stringify(pendingTokens));
+        console.warn('⚠️ Đã lưu token vào queue để retry sau');
+      }
+    }
+  }
+}
+
+// Retry pending tokens khi user login
+export function retryPendingTokens() {
+  const pendingTokens = JSON.parse(localStorage.getItem('pendingFcmTokens') || '[]');
+  if (pendingTokens.length > 0) {
+    console.log(`🔄 Retry ${pendingTokens.length} pending FCM tokens...`);
+    pendingTokens.forEach(token => {
+      saveTokenToBackend(token);
+    });
   }
 }
 

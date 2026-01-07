@@ -1,5 +1,9 @@
 // Service Worker cho Firebase Cloud Messaging
 // File này sẽ nhận thông báo khi tab web bị đóng
+// Version: 1.0.0 - Update này để force refresh Service Worker
+
+const SW_VERSION = '1.0.0';
+console.log(`[firebase-messaging-sw.js] Service Worker version ${SW_VERSION} đã load`);
 
 importScripts('https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.13.2/firebase-messaging-compat.js');

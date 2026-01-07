@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { login, register } from '../auth';
+import { retryPendingTokens } from '../services/fcmService';
 
 export default function Login() {
   const [isRegister, setIsRegister] = useState(false);
@@ -38,8 +39,11 @@ export default function Login() {
 
       if (response && response.token) {
           localStorage.setItem('token', response.token); 
-
+          localStorage.setItem('username', response.username);
           localStorage.setItem('user', JSON.stringify({ username: response.username }));
+
+          // Retry pending FCM tokens nếu có
+          retryPendingTokens();
 
           nav('/dashboard');
       } else {
