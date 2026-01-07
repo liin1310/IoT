@@ -69,13 +69,47 @@ namespace SensorApi.Controllers
             _context = context;
         }
 
+        // Helper method để lưu trạng thái vào database
+        private async Task SaveDeviceStatusToDatabase(string type, string state)
+        {
+            try
+            {
+                // Lấy device đầu tiên (ESP32 mặc định)
+                var device = await _context.Devices.OrderBy(d => d.id).FirstOrDefaultAsync();
+                if (device == null) return;
+
+                // Convert state string (ON/OFF) sang value (1.0/0.0)
+                double value = (state == "ON") ? 1.0 : 0.0;
+
+                var statusEntry = new SensorData
+                {
+                    DeviceId = device.id,
+                    type = type,
+                    value = value,
+                    received_at = DateTimeOffset.UtcNow
+                };
+
+                _context.SensorDataEntries.Add(statusEntry);
+                await _context.SaveChangesAsync();
+                
+                Console.WriteLine($">>> Đã lưu {type} = {state} vào database");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($">>> Lỗi lưu {type} status: {ex.Message}");
+            }
+        }
+
         //API để điều khiển đèn
         [HttpPost("light")]
         public async Task<IActionResult> ControlLight([FromBody] DeviceCommand body)
         {
             await _mqtt.PublishAsync("home/cmd/light", body.State);
             
-            // Thông báo cho Frontend cập nhật trạng thái icon ngay lập tức
+            // Lưu trạng thái vào database ngay để polling có thể lấy được
+            await SaveDeviceStatusToDatabase("LightStatus", body.State);
+            
+            // Thông báo cho Frontend cập nhật trạng thái icon ngay lập tức (nếu dùng SignalR)
             await _hubContext.Clients.All.SendAsync("DeviceStatusChanged", new { device = "light", state = body.State });
             
             return Ok(new { message = "Light command sent" });
@@ -88,6 +122,9 @@ namespace SensorApi.Controllers
         {
             await _mqtt.PublishAsync("home/cmd/fan", body.State);
             
+            // Lưu trạng thái vào database ngay để polling có thể lấy được
+            await SaveDeviceStatusToDatabase("FanStatus", body.State);
+            
             await _hubContext.Clients.All.SendAsync("DeviceStatusChanged", new { device = "fan", state = body.State });
             
             return Ok(new { message = "Fan command sent" });
@@ -98,6 +135,9 @@ namespace SensorApi.Controllers
         public async Task<IActionResult> ControlDoor([FromBody] DeviceCommand body)
         {
             await _mqtt.PublishAsync("home/cmd/door", body.State);
+            
+            // Lưu trạng thái vào database ngay để polling có thể lấy được
+            await SaveDeviceStatusToDatabase("DoorStatus", body.State);
             
             await _hubContext.Clients.All.SendAsync("DeviceStatusChanged", new { device = "door", state = body.State });
             
