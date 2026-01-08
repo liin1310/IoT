@@ -35,7 +35,6 @@ export default function GasChart({ points = [] }) {
     }
   }, [status, muted, latest]);
 
-  // Flash liên tục khi ở trạng thái DANGER
   useEffect(() => {
     if (status === 'DANGER') {
       setFlash(true);
@@ -46,17 +45,16 @@ export default function GasChart({ points = [] }) {
 
   useEffect(()=>{ try{ localStorage.setItem('gas:muted', muted? '1':'0') }catch(e){} }, [muted]);
 
-  // compute delta vs N minutes ago for header display
   const DELTA_MINUTES = 5;
   let deltaText = '';
   if (points && points.length>1){
     const lastT = typeof latestTime === 'number' ? latestTime : Date.parse(String(latestTime));
     const cutoff = lastT - DELTA_MINUTES*60*1000;
-    // find nearest point before cutoff
+
     let prev = null;
     for (let i = points.length-1; i>=0; i--){ const t = typeof points[i].time === 'number' ? points[i].time : Date.parse(String(points[i].time)); if (t <= cutoff) { prev = points[i]; break; } }
     if (!prev) {
-      // fallback: take earliest point within window
+
       for (let i = points.length-1; i>=0; i--){ const t = typeof points[i].time === 'number' ? points[i].time : Date.parse(String(points[i].time)); if (t <= lastT - 1000) { prev = points[i]; break; } }
     }
     if (prev) {

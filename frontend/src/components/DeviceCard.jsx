@@ -30,7 +30,6 @@ export default function DeviceCard({ device, onToggle }) {
 
       <div className="overlay">
         <div className="top">
-          {/* ICON */}
           <div
             style={{
               width: 44,
@@ -46,7 +45,6 @@ export default function DeviceCard({ device, onToggle }) {
             {getDeviceIcon(device)}
           </div>
 
-          {/* TOGGLE */}
           <button
             onClick={() => onToggle(device)}
             style={{

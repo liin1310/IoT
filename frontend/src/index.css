@@ -53,8 +53,6 @@ button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
-
-/* App layout helpers */
 .app-container {
   min-height: 100vh;
   padding: 28px;
@@ -77,7 +75,6 @@ button:focus-visible {
 
 .voice-button { position: fixed; right: 20px; bottom: 20px; z-index: 60; }
 
-/* Dashboard specific */
 .hero { display:flex; align-items:center; gap:16px; margin-top:8px; }
 .avatar { width:48px; height:48px; border-radius:12px; background:linear-gradient(135deg,#ffd9b3,#c4f0ff); display:flex; align-items:center; justify-content:center; color:#123; font-weight:700 }
 .hero-title { font-size:32px; font-weight:800; margin:0; }
@@ -99,7 +96,7 @@ button:focus-visible {
 
 .sensors-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 18px; }
 
-/* Small screens: make layout single-column */
+
 @media (max-width: 720px) {
   .devices-grid { justify-content: center; }
   .device-card { width: calc(100% - 48px) !important; }
@@ -109,7 +106,6 @@ button:focus-visible {
   .hero-title { font-size:20px }
 }
 
-/* Login page styles */
 .login-page { min-height:100vh; display:flex; align-items:center; justify-content:center; background:#071226; }
 .login-card { width:360px; background:transparent; padding:22px 20px 36px; color:#fff; box-sizing:border-box; }
 .login-inner { background:#0b1a2b; border-radius:14px; padding:28px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); }
@@ -133,15 +129,12 @@ button:focus-visible {
   .login-title { font-size:22px }
 }
 
-/* Card visuals used in sensor screen */
 .card { background:#071726; padding:12px; border-radius:12px; }
 .alert-card { background: linear-gradient(90deg,#5b0a0a,#811212); padding:12px; border-radius:12px; }
 
-/* Bottom nav visible on small screens only */
 .bottom-nav { display:none; }
 @media (max-width:720px){ .bottom-nav { display:block; } }
 
-/* Main content spacing to avoid bottom nav */
 @media (max-width:720px){ main { padding-bottom:72px; } }
 
 @media (min-width: 1024px) {

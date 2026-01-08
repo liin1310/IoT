@@ -12,13 +12,12 @@ import {
   requestNotificationPermission,
   retryPendingTokens
 } from './services/fcmService';
-import './utils/fcmDebug'; // Import để load debug function vào window
+import './utils/fcmDebug';
 
 function App() {
   const isAuth = !!localStorage.getItem('token');
   const [alarmPopup, setAlarmPopup] = useState({ isOpen: false, title: '', message: '' });
 
-  // Khởi tạo FCM khi user đã đăng nhập
   useEffect(() => {
     if (!isAuth) return;
 
@@ -26,20 +25,16 @@ function App() {
 
     const setupFCM = async () => {
       try {
-        // Yêu cầu quyền thông báo
         const granted = await requestNotificationPermission();
         if (!granted) {
           console.warn('Người dùng chưa cấp quyền thông báo');
           return;
         }
 
-        // Khởi tạo FCM
         if (!initializeFCM()) {
           console.warn('Không thể khởi tạo FCM');
           return;
         }
-
-        // Đăng ký và lưu token (đợi hoàn thành)
         const token = await registerFCMToken();
         if (!token) {
           console.warn('Không thể lấy FCM token');
@@ -48,16 +43,11 @@ function App() {
 
         console.log('FCM đã sẵn sàng, token:', token);
 
-        // Retry pending tokens nếu có
         retryPendingTokens();
-
-        // Lắng nghe thông báo khi app đang mở (sau khi token đã đăng ký)
         unsubscribe = onForegroundMessage((payload) => {
           console.log('Nhận thông báo foreground:', payload);
-          
-          // Kiểm tra nếu là ALARM
           if (payload.data?.type === 'ALARM') {
-            const title = payload.notification?.title || '🚨 BÁO ĐỘNG KHẨN CẤP';
+            const title = payload.notification?.title || 'BÁO ĐỘNG KHẨN CẤP';
             const message = payload.notification?.body || 'Có cảnh báo từ hệ thống!';
             
             setAlarmPopup({
@@ -73,8 +63,6 @@ function App() {
     };
 
     setupFCM();
-
-    // Cleanup khi unmount hoặc logout
     return () => {
       if (unsubscribe) {
         unsubscribe();

@@ -67,12 +67,11 @@ function SimpleLine({points, width=520, height=140, color='#0a84ff', maxPoints=1
 
   const leftMargin = 28;
   const paddingX = 6;
-  const labelHeight = 18; // space for time labels
+  const labelHeight = 18; 
   const plotWidth = Math.max(40, width - leftMargin - paddingX*2);
   const plotHeight = Math.max(20, height - labelHeight - 12);
 
   const timeRange = Math.max(1, pts[pts.length-1].t - pts[0].t);
-  // compute smoothed values if requested (moving average)
   const windowSize = Math.max(1, Math.floor(sampled.length / 20));
   const smoothVals = smooth && windowSize > 1 ? sampled.map((_, idx) => {
     const start = Math.max(0, idx - Math.floor(windowSize/2));
@@ -89,7 +88,6 @@ function SimpleLine({points, width=520, height=140, color='#0a84ff', maxPoints=1
     return `${x},${y}`;
   }).join(' ');
 
-  // threshold shading (array of { label, max, color } or object with SAFE/WARNING/DANGER)
   const thresholdRects = (() => {
     if (!thresholds || sampled.length===0) return null;
     const items = Array.isArray(thresholds)
@@ -102,7 +100,6 @@ function SimpleLine({points, width=520, height=140, color='#0a84ff', maxPoints=1
     });
   })();
 
-  // area path for filled area under the curve
   const areaPath = (() => {
     if (sampled.length === 0) return '';
     const coords = sampled.map((p, i) => {
@@ -119,7 +116,6 @@ function SimpleLine({points, width=520, height=140, color='#0a84ff', maxPoints=1
     return d;
   })();
 
-  // x-axis ticks: 4 ticks including ends
   const ticks = 4;
   const tickTimes = [];
   for (let i=0;i<ticks;i++){
@@ -136,7 +132,7 @@ function SimpleLine({points, width=520, height=140, color='#0a84ff', maxPoints=1
 
   return (
     <svg width={width} height={height} style={{display:'block'}}>
-      {/* threshold shading behind chart */}
+
       {thresholdRects && (()=>{
         const left = leftMargin + paddingX;
         const right = leftMargin + plotWidth + paddingX;
@@ -151,20 +147,15 @@ function SimpleLine({points, width=520, height=140, color='#0a84ff', maxPoints=1
         return parts;
       })()}
 
-      {/* filled area */}
       {areaPath && <path d={areaPath} fill={color} opacity={0.06} />}
 
       <polyline fill="none" stroke={color} strokeWidth={2.5} points={pointsAttr} strokeLinecap="round" strokeLinejoin="round" />
 
-      {/* y-axis (min/max) */}
       <line x1={leftMargin-20} x2={leftMargin-20} y1={6} y2={plotHeight+6} stroke="rgba(255,255,255,0.06)" />
       <text x={2} y={14} fill="#9fb4d1" fontSize={11} textAnchor="start">{max}</text>
       <text x={2} y={plotHeight+2} fill="#9fb4d1" fontSize={11} textAnchor="start">{min}</text>
 
-      {/* x-axis line */}
       <line x1={leftMargin+paddingX} x2={leftMargin+plotWidth+paddingX} y1={plotHeight+6} y2={plotHeight+6} stroke="rgba(255,255,255,0.06)" />
-
-      {/* ticks and labels */}
       {tickTimes.map((t, i)=>{
         const x = leftMargin + ((t - pts[0].t)/timeRange)*(plotWidth) + paddingX;
         return (
@@ -175,7 +166,7 @@ function SimpleLine({points, width=520, height=140, color='#0a84ff', maxPoints=1
         );
       })}
 
-      {/* points (sampled) with hover handlers for tooltip */}
+
       {sampled.map((p, i) => {
         const x = leftMargin + ((p.t - pts[0].t)/timeRange)*(plotWidth) + paddingX;
         const v = smoothVals[i];
@@ -187,22 +178,19 @@ function SimpleLine({points, width=520, height=140, color='#0a84ff', maxPoints=1
         );
       })}
 
-      {/* latest marker and delta */}
       {showLatestMarker && sampled.length>0 && (()=>{
         const p = sampled[sampled.length-1];
         const i = sampled.length-1;
         const x = leftMargin + ((p.t - pts[0].t)/timeRange)*(plotWidth) + paddingX;
         const v = smoothVals[i];
         const y = (plotHeight - ((v - min)/(max-min||1))*(plotHeight-12)) + 6;
-        // compute delta against N minutes before
+
         let deltaText = '';
         if (showDeltaMinutes > 0){
           const cutoff = p.t - (showDeltaMinutes*60*1000);
-          // find earlier sampled point closest before cutoff
           let prev = null;
           for (let k=sampled.length-1;k>=0;k--){ if (sampled[k].t <= cutoff) { prev = sampled[k]; break; } }
           if (!prev) {
-            // fallback: earliest point within window
             for (let k=sampled.length-1;k>=0;k--){ if (sampled[k].t <= p.t - 1000) { prev = sampled[k]; break; } }
           }
           if (prev){
@@ -218,7 +206,6 @@ function SimpleLine({points, width=520, height=140, color='#0a84ff', maxPoints=1
         );
       })()}
 
-      {/* tooltip */}
       {hover && (()=>{
         const idx = hover.i;
         let deltaLine = '';
@@ -227,7 +214,7 @@ function SimpleLine({points, width=520, height=140, color='#0a84ff', maxPoints=1
           const nowPoint = { v: smoothVals[idx], t: sampled[idx].t };
           if (showDeltaMinutes > 0){
             const cutoff = nowPoint.t - showDeltaMinutes*60*1000;
-            // find previous sampled point before cutoff
+        
             let prev = null;
             for (let k=idx;k>=0;k--){ if (sampled[k].t <= cutoff) { prev = { v: smoothVals[k], t: sampled[k].t }; break; } }
             if (!prev){ for (let k=idx-1;k>=0;k--){ prev = { v: smoothVals[k], t: sampled[k].t }; break; } }

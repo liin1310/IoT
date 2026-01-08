@@ -42,7 +42,6 @@ export default function Login() {
           localStorage.setItem('username', response.username);
           localStorage.setItem('user', JSON.stringify({ username: response.username }));
 
-          // Retry pending FCM tokens nếu có
           retryPendingTokens();
 
           nav('/dashboard');
@@ -68,8 +67,8 @@ export default function Login() {
             <div className="form-row">
               <label className="form-label">Tên đăng nhập</label>
               <input 
-                name="username"           // Thêm cái này
-                autoComplete="username"   // Thêm cái này
+                name="username"          
+                autoComplete="username"  
                 className="form-input" 
                 value={username} 
                 onChange={e=>setUsername(e.target.value)} 
@@ -101,8 +100,8 @@ export default function Login() {
 
           <div className="or-row">HOẶC {isRegister ? 'ĐĂNG KÝ' : 'ĐĂNG NHẬP'} VỚI</div>
           <div className="social-row">
-            <button className="social-btn">🌐 Google</button>
-            <button className="social-btn"> Apple</button>
+            <button className="social-btn"> Google</button>
+            <button className="social-btn"> Apple</button>
           </div>
 
           <div className="register">

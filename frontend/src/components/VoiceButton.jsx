@@ -46,7 +46,6 @@ export default function VoiceButton() {
     }
   }
 
-  // start auto-confirm countdown when pending is set
   useEffect(() => {
     if (!pending) {
       setAutoCountdown(0);
@@ -54,7 +53,6 @@ export default function VoiceButton() {
       return;
     }
 
-    // start 3s countdown
     let seconds = 3;
     setAutoCountdown(seconds);
     countdownRef.current = setInterval(() => {

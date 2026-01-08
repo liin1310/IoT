@@ -18,17 +18,12 @@ async function poll(type) {
 
     if (!Array.isArray(data)) return;
 
-    // debug: how many items returned
     console.debug(`Polling ${type} -> ${data.length} items`, { type, url: url, returned: data.length });
-
-    // helper: normalize ISO string to milliseconds precision (some servers send microseconds)
     const normalizeIso = (s) => {
       if (!s) return s;
-      // replace fractional seconds >3 digits with 3 digits (truncate extra microseconds)
       return s.replace(/\.(\d{3})\d+/, '.$1');
     };
 
-    // Sort ascending by received_at so we emit oldest->newest
     const items = data.slice().sort((a, b) => {
       const ta = Date.parse(normalizeIso(a.received_at));
       const tb = Date.parse(normalizeIso(b.received_at));
@@ -39,10 +34,8 @@ async function poll(type) {
     for (const item of items) {
       const norm = normalizeIso(item.received_at);
       const t = Date.parse(norm);
-      // if we have a last timestamp, only emit newer items
       if (!lastTimeMap[type] || t > lastTimeMap[type]) {
         lastTimeMap[type] = t;
-        // per-item debug
         console.debug(`[ws] emit ${type}`, { id: item.id, received_at: norm, value: item.value });
         listeners.forEach(cb => cb({ type: item.type, value: Number(item.value), time: norm, timeMs: t }));
         emitted++;
@@ -57,8 +50,6 @@ async function poll(type) {
 
 export function startPolling(types = ["Gas", "Temperature", "Humidity"]) {
   if (timer) return;
-
-  // initial immediate poll
   types.forEach(poll);
 
   timer = setInterval(() => {

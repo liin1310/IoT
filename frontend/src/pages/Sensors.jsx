@@ -40,16 +40,12 @@ export default function Sensors(){
     ];
   });
 
-  // 1. Start polling (centralized in ../ws.js) and subscribe to emitted sensor items
   useEffect(() => {
-    // subscribe first
     const off = onSensorData((d) => {
-      // use numeric ms if provided by emitter (preferred), otherwise normalize string
       const raw = d.timeMs || d.time || d.received_at || d.receivedAt;
       let tsMs = null;
       if (typeof raw === 'number') tsMs = raw;
       else if (typeof raw === 'string') {
-        // truncate microseconds if present
         const normalized = raw.replace(/\.(\d{3})\d+/, '.$1');
         tsMs = Date.parse(normalized);
       }
@@ -57,7 +53,6 @@ export default function Sensors(){
       console.debug('[Sensors] onSensorData received', { type: d.type, value: d.value, time: ts, timeMs: tsMs });
       if (d.type === 'Temperature'){
         setHistoryTemp(h => {
-          // determine numeric ms timestamp
           const timeMs = (typeof d.timeMs === 'number') ? d.timeMs : Date.parse((d.time || d.received_at || d.receivedAt || new Date().toISOString()).toString().replace(/\.(\d{3})\d+/, '.$1'));
           const t = { value: Number(d.value), time: Number(timeMs) };
           const updated = [...h, t].filter(p => (Date.now() - Number(p.time)) <= 6*3600*1000);
@@ -84,7 +79,6 @@ export default function Sensors(){
         console.debug('[Sensors] updated Humidity last', d.value);
       }
     });
-    // then start polling backend (so subscriber catches initial batch)
     console.debug('[Sensors] starting polling');
     startPolling();
 
@@ -94,12 +88,10 @@ export default function Sensors(){
     };
   }, []);
 
-  // persist controls when user toggles them
   useEffect(() => {
     try { localStorage.setItem('sensors:controls', JSON.stringify(controls)); } catch (e) {}
   }, [controls]);
 
-  // 2. THÊM MỚI: Logic Polling API Check Fire liên tục
   useEffect(() => {
     let lastRequestId = 0;
   
@@ -117,15 +109,13 @@ export default function Sensors(){
   
         if (requestId !== lastRequestId) return;
   
-        // NẾU người dùng đã nhấn nút Tắt (fireLockRef = true)
-        // THÌ chúng ta bỏ qua việc setFire(true) cho đến khi Backend thực sự báo hết cháy
         if (data.isFire) {
           if (fireLockRef.current === false) {
             setFire(true);
             console.log(' Phát hiện cháy - AlertCard sẽ hiển thị');
           }
         } else {
-          // Chỉ khi Backend báo hết cháy thực sự, ta mới mở khóa để nhận cảnh báo mới cho lần sau
+
           if (fireLockRef.current) {
             console.log(' Hết cháy - Mở khóa để nhận cảnh báo mới');
           }
@@ -137,7 +127,7 @@ export default function Sensors(){
       }
     };
   
-    // Gọi ngay lần đầu
+  
     checkFireStatus();
     
     const id = setInterval(checkFireStatus, 2000);
@@ -145,9 +135,7 @@ export default function Sensors(){
   }, []);
   
   async function handleStopAlarm() {
-    // 1. Khóa lại ngay lập tức: "Tôi đã tắt rồi, đừng nghe lời Backend báo cháy nữa"
     fireLockRef.current = true; 
-    // 2. Ẩn UI ngay lập tức
     setFire(false);
   
     try {
@@ -155,10 +143,8 @@ export default function Sensors(){
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       });
-      // Không setFire(false) ở finally nữa vì đã set ở trên để tránh giật lag UI
     } catch (err) {
       console.error('Lỗi stop alarm:', err);
-      // Nếu lỗi, có thể mở khóa lại để cảnh báo tiếp
       fireLockRef.current = false;
     }
   }
@@ -175,7 +161,6 @@ export default function Sensors(){
         <div style={{marginLeft:'auto',padding:'4px 10px',background:'#0b3b20',borderRadius:12,color:'#8ff0a5'}}>Online</div>
       </header>
 
-      {/* 3. Hiển thị cảnh báo: AlertCard sẽ hiện khi state fire = true */}
       <div style={{marginTop:8}}>
         <AlertCard 
             visible={fire} 
