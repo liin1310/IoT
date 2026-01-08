@@ -62,7 +62,7 @@ namespace SensorApi.Controllers
         private readonly IHubContext<SensorHub> _hubContext; 
         private readonly AppDbContext _context;
 
-        public DeviceController(MqttPublisher mqtt, IHubContext<SensorHub> hubContext, AppDbContext context)
+        public DeviceController(MqttPublisher mqtt, IHubContext<SensorHub> hubContext, AppDbContext context )
         {
             _mqtt = mqtt;
             _hubContext = hubContext;
